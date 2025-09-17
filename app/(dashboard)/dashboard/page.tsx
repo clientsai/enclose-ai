@@ -183,6 +183,9 @@ export default function DashboardPage() {
                 <Link href="/settings" className="text-gray-700 hover:text-indigo-600 transition-colors">
                   Settings
                 </Link>
+                <Link href="/clients-ai" className="text-gray-700 hover:text-indigo-600 transition-colors">
+                  Clients.AI
+                </Link>
               </div>
             </div>
             <div className="flex items-center gap-4">
