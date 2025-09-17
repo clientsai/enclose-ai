@@ -1,0 +1,61 @@
+{
+  "route": "/dashboard",
+  "content": {
+    "nav": {
+      "links": ["Dashboard", "Payment Links", "Analytics", "Settings"],
+      "userEmail": "user?.email",
+      "signOutButton": true
+    },
+    "stripeConnect": {
+      "title": "Connect Your Stripe Account",
+      "description": "To start accepting payments, connect your Stripe account",
+      "buttonText": "Connect Stripe Account"
+    },
+    "stats": [
+      {
+        "title": "Total Revenue",
+        "value": "formatCurrency(0)",
+        "subtitle": "This month",
+        "icon": "DollarSign"
+      },
+      {
+        "title": "Active Links",
+        "value": "paymentLinks.length",
+        "subtitle": "Payment links",
+        "icon": "LinkIcon"
+      },
+      {
+        "title": "Conversions",
+        "value": "0%",
+        "subtitle": "Conversion rate",
+        "icon": "TrendingUp"
+      }
+    ],
+    "createPaymentLink": {
+      "title": "Create Payment Link",
+      "description": "Generate a new payment link for your product",
+      "fields": [
+        {
+          "label": "Product Name",
+          "placeholder": "Premium Package"
+        },
+        {
+          "label": "Amount",
+          "placeholder": "99.99"
+        }
+      ],
+      "buttonText": {
+        "default": "Create Link",
+        "loading": "Creating..."
+      }
+    },
+    "recentLinks": {
+      "title": "Recent Payment Links",
+      "emptyMessage": "No payment links created yet"
+    },
+    "recentPayments": {
+      "title": "Recent Payments",
+      "emptyMessage": "No payments received yet"
+    }
+  }
+}

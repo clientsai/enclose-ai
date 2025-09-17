@@ -3,10 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   CreditCard,
   Link as LinkIcon,
@@ -19,12 +15,20 @@ import {
   Check,
   DollarSign,
   TrendingUp,
-  ArrowRight
+  ArrowRight,
+  Shield,
+  Activity,
+  Zap
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
 import { getStripeOAuthURL } from '@/lib/stripe'
 import Logo from '@/components/Logo'
+
+import { Section, Stack, Grid, Split } from '@/components/premium/Section'
+import { Heading, Text, Lead, Eyebrow } from '@/components/premium/Typography'
+import { Button, Card, Divider, Badge, Stat, CTA, Callout } from '@/components/premium/UI'
+import { FormField, Label, Input } from '@/components/premium/Forms'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -148,21 +152,24 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
+        <Stack align="center" gap="small">
+          <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+          <Text muted>Loading...</Text>
+        </Stack>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
-      <nav className="bg-white/70 backdrop-blur-md shadow-sm border-b sticky top-0 z-50">
+      <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center gap-8">
               <Logo size="md" />
               <div className="hidden md:flex gap-6">
-                <Link href="/dashboard" className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
+                <Link href="/dashboard" className="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors">
                   Dashboard
                 </Link>
                 <Link href="/payment-links" className="text-gray-700 hover:text-indigo-600 transition-colors">
@@ -177,207 +184,240 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{user?.email}</span>
-              <Button variant="ghost" size="sm" onClick={handleSignOut} className="hover:bg-indigo-50">
-                <LogOut className="h-4 w-4" />
+              <Badge variant="primary" size="sm">{user?.email}</Badge>
+              <Button variant="ghost" onClick={handleSignOut} icon={<LogOut className="h-4 w-4" />} iconPosition="left">
+                Sign Out
               </Button>
             </div>
           </div>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {!stripeConnected && (
-          <Card className="mb-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white border-0 shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-white text-2xl">Connect Your Stripe Account</CardTitle>
-              <CardDescription className="text-indigo-100">
-                To start accepting payments, connect your Stripe account
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={handleConnectStripe} className="bg-white text-indigo-600 hover:bg-gray-100 shadow-lg">
-                <CreditCard className="mr-2 h-4 w-4" />
-                Connect Stripe Account
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+      <main>
+        <Section spacing="large">
+          {!stripeConnected && (
+            <article className="mb-8">
+              <CTA
+                variant="gradient"
+                title="Connect Your Stripe Account"
+                description="To start accepting payments, connect your Stripe account"
+                buttonText="Connect Stripe Account"
+                buttonHref="#"
+                className="shadow-2xl"
+              />
+              <div className="mt-8">
+                <Button
+                  onClick={handleConnectStripe}
+                  variant="primary"
+                  size="lg"
+                  gradient
+                  icon={<CreditCard className="h-5 w-5" />}
+                  iconPosition="left"
+                  className="w-full sm:w-auto"
+                >
+                  Connect Stripe Account
+                </Button>
+              </div>
+            </article>
+          )}
 
-        <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          <Card className="border-gray-200 hover:border-indigo-200 hover:shadow-lg transition-all bg-white/80 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Revenue</CardTitle>
-              <div className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500">
-                <DollarSign className="h-4 w-4 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-indigo-800 bg-clip-text text-transparent">
-                {formatCurrency(0)}
-              </div>
-              <p className="text-xs text-gray-600 mt-1">This month</p>
-            </CardContent>
-          </Card>
+          <header className="mb-8">
+            <Stack gap="small">
+              <Eyebrow icon={<Activity className="w-4 h-4" />}>
+                Real-time Overview
+              </Eyebrow>
+              <Heading as="h1" gradient>Dashboard</Heading>
+              <Lead>Monitor your payment performance and manage your integration</Lead>
+            </Stack>
+          </header>
 
-          <Card className="border-gray-200 hover:border-indigo-200 hover:shadow-lg transition-all bg-white/80 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Active Links</CardTitle>
-              <div className="p-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500">
-                <LinkIcon className="h-4 w-4 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-indigo-800 bg-clip-text text-transparent">
-                {paymentLinks.length}
-              </div>
-              <p className="text-xs text-gray-600 mt-1">Payment links</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-gray-200 hover:border-indigo-200 hover:shadow-lg transition-all bg-white/80 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Conversions</CardTitle>
-              <div className="p-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500">
-                <TrendingUp className="h-4 w-4 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-indigo-800 bg-clip-text text-transparent">
-                0%
-              </div>
-              <p className="text-xs text-gray-600 mt-1">Conversion rate</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {stripeConnected && (
-          <Card className="mb-8 border-gray-200 shadow-lg bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-gray-900">Create Payment Link</CardTitle>
-              <CardDescription className="text-gray-600">Generate a new payment link for your product</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-4 gap-4">
-                <div className="md:col-span-2">
-                  <Label htmlFor="productName" className="text-gray-700">Product Name</Label>
-                  <Input
-                    id="productName"
-                    placeholder="Premium Package"
-                    className="border-gray-200 focus:border-indigo-300 focus:ring-indigo-200"
-                    value={newLink.productName}
-                    onChange={(e) => setNewLink({ ...newLink, productName: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="amount" className="text-gray-700">Amount</Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    placeholder="99.99"
-                    className="border-gray-200 focus:border-indigo-300 focus:ring-indigo-200"
-                    value={newLink.amount}
-                    onChange={(e) => setNewLink({ ...newLink, amount: e.target.value })}
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button
-                    onClick={handleCreatePaymentLink}
-                    disabled={creatingLink || !newLink.productName || !newLink.amount}
-                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg"
-                  >
-                    {creatingLink ? 'Creating...' : (
-                      <>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Create Link
-                      </>
-                    )}
-                  </Button>
+          <Grid cols={3} className="mb-12">
+            <Card hover className="relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 shadow-lg">
+                  <DollarSign className="h-5 w-5 text-white" />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <div className="p-6">
+                <Text muted size="small" className="mb-1">Total Revenue</Text>
+                <div className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-indigo-800 bg-clip-text text-transparent">
+                  {formatCurrency(0)}
+                </div>
+                <Text muted size="small" className="mt-2">This month</Text>
+              </div>
+            </Card>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          <Card className="border-gray-200 shadow-lg bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-gray-900">Recent Payment Links</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {paymentLinks.length === 0 ? (
-                <p className="text-gray-500 text-sm">No payment links created yet</p>
-              ) : (
-                <div className="space-y-3">
-                  {paymentLinks.map((link) => (
-                    <div key={link.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-lg border border-gray-200 hover:border-indigo-200 transition-all">
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">{link.product_name}</p>
-                        <p className="text-sm text-gray-600">
-                          {formatCurrency(link.amount)} • Created {formatDateTime(link.created_at)}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(link.url, link.id)}
-                          className="hover:bg-indigo-50"
-                        >
-                          {copiedLink === link.id ? (
-                            <Check className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <Copy className="h-4 w-4 text-indigo-600" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => window.open(link.url, '_blank')}
-                          className="hover:bg-indigo-50"
-                        >
-                          <ExternalLink className="h-4 w-4 text-indigo-600" />
-                        </Button>
-                      </div>
+            <Card hover className="relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg">
+                  <LinkIcon className="h-5 w-5 text-white" />
+                </div>
+              </div>
+              <div className="p-6">
+                <Text muted size="small" className="mb-1">Active Links</Text>
+                <div className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-indigo-800 bg-clip-text text-transparent">
+                  {paymentLinks.length}
+                </div>
+                <Text muted size="small" className="mt-2">Payment links</Text>
+              </div>
+            </Card>
+
+            <Card hover className="relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-lg">
+                  <TrendingUp className="h-5 w-5 text-white" />
+                </div>
+              </div>
+              <div className="p-6">
+                <Text muted size="small" className="mb-1">Conversions</Text>
+                <div className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-indigo-800 bg-clip-text text-transparent">
+                  0%
+                </div>
+                <Text muted size="small" className="mt-2">Conversion rate</Text>
+              </div>
+            </Card>
+          </Grid>
+
+          {stripeConnected && (
+            <section className="mb-12">
+              <Card className="p-8 bg-gradient-to-br from-white to-indigo-50/30">
+                <Stack gap="default">
+                  <header>
+                    <Heading as="h2" size="h3">Create Payment Link</Heading>
+                    <Text muted>Generate a new payment link for your product</Text>
+                  </header>
+
+                  <Grid cols={4} gap="default">
+                    <div className="col-span-2">
+                      <FormField>
+                        <Label htmlFor="productName">Product Name</Label>
+                        <Input
+                          id="productName"
+                          placeholder="Premium Package"
+                          value={newLink.productName}
+                          onChange={(e) => setNewLink({ ...newLink, productName: e.target.value })}
+                        />
+                      </FormField>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
-          <Card className="border-gray-200 shadow-lg bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-gray-900">Recent Payments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {recentPayments.length === 0 ? (
-                <p className="text-gray-500 text-sm">No payments received yet</p>
-              ) : (
-                <div className="space-y-3">
-                  {recentPayments.map((payment) => (
-                    <div key={payment.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-purple-50 rounded-lg border border-gray-200 hover:border-indigo-200 transition-all">
-                      <div>
-                        <p className="font-medium text-gray-900">{formatCurrency(payment.amount)}</p>
-                        <p className="text-sm text-gray-600">
-                          {payment.customer_email} • {formatDateTime(payment.created_at)}
-                        </p>
-                      </div>
-                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        payment.status === 'succeeded'
-                          ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800'
-                          : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800'
-                      }`}>
-                        {payment.status}
-                      </div>
+                    <FormField>
+                      <Label htmlFor="amount">Amount</Label>
+                      <Input
+                        id="amount"
+                        type="number"
+                        placeholder="99.99"
+                        value={newLink.amount}
+                        onChange={(e) => setNewLink({ ...newLink, amount: e.target.value })}
+                      />
+                    </FormField>
+
+                    <div className="flex items-end">
+                      <Button
+                        onClick={handleCreatePaymentLink}
+                        disabled={creatingLink || !newLink.productName || !newLink.amount}
+                        variant="primary"
+                        gradient
+                        className="w-full"
+                        icon={<Plus className="h-4 w-4" />}
+                        iconPosition="left"
+                      >
+                        {creatingLink ? 'Creating...' : 'Create Link'}
+                      </Button>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                  </Grid>
+                </Stack>
+              </Card>
+            </section>
+          )}
+
+          <Grid cols={2} gap="large">
+            <Card className="overflow-hidden">
+              <div className="p-6 bg-gradient-to-br from-gray-50 to-indigo-50/50">
+                <Heading as="h2" size="h3">Recent Payment Links</Heading>
+              </div>
+              <Divider />
+              <div className="p-6">
+                {paymentLinks.length === 0 ? (
+                  <Callout variant="info">
+                    No payment links created yet
+                  </Callout>
+                ) : (
+                  <Stack gap="small">
+                    {paymentLinks.map((link) => (
+                      <div key={link.id} className="p-4 bg-gradient-to-r from-white to-indigo-50/30 rounded-lg border border-gray-200 hover:border-indigo-300 transition-all">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <Text className="font-semibold text-gray-900">{link.product_name}</Text>
+                            <Text size="small" muted>
+                              {formatCurrency(link.amount)} • Created {formatDateTime(link.created_at)}
+                            </Text>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyToClipboard(link.url, link.id)}
+                            >
+                              {copiedLink === link.id ? (
+                                <Check className="h-4 w-4 text-green-600" />
+                              ) : (
+                                <Copy className="h-4 w-4 text-indigo-600" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(link.url, '_blank')}
+                            >
+                              <ExternalLink className="h-4 w-4 text-indigo-600" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </Stack>
+                )}
+              </div>
+            </Card>
+
+            <Card className="overflow-hidden">
+              <div className="p-6 bg-gradient-to-br from-gray-50 to-purple-50/50">
+                <Heading as="h2" size="h3">Recent Payments</Heading>
+              </div>
+              <Divider />
+              <div className="p-6">
+                {recentPayments.length === 0 ? (
+                  <Callout variant="info">
+                    No payments received yet
+                  </Callout>
+                ) : (
+                  <Stack gap="small">
+                    {recentPayments.map((payment) => (
+                      <div key={payment.id} className="p-4 bg-gradient-to-r from-white to-purple-50/30 rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Text className="font-semibold text-gray-900">
+                              {formatCurrency(payment.amount)}
+                            </Text>
+                            <Text size="small" muted>
+                              {payment.customer_email} • {formatDateTime(payment.created_at)}
+                            </Text>
+                          </div>
+                          <Badge
+                            variant={payment.status === 'succeeded' ? 'success' : 'default'}
+                            size="sm"
+                          >
+                            {payment.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </Stack>
+                )}
+              </div>
+            </Card>
+          </Grid>
+        </Section>
       </main>
     </div>
   )
