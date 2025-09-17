@@ -1,0 +1,54 @@
+{
+  "route": "/settings",
+  "content": {
+    "nav": {
+      "links": ["Dashboard", "Payment Links", "Analytics", "Settings"],
+      "backToDashboard": "Back to Dashboard"
+    },
+    "header": {
+      "title": "Settings",
+      "description": "Manage your API keys and integration settings"
+    },
+    "apiKeys": {
+      "title": "API Keys",
+      "description": "Manage API keys for Clients.AI integration",
+      "newKeyMessage": {
+        "title": "API Key Created Successfully",
+        "warning": "Save this key now. You won't be able to see it again!"
+      },
+      "placeholder": "API Key Name (e.g., Production)",
+      "createButton": "Create Key",
+      "emptyMessage": "No API keys created yet",
+      "createdText": "Created",
+      "lastUsedText": "Last used"
+    },
+    "documentation": {
+      "title": "API Documentation",
+      "description": "Learn how to integrate Enclose.AI with Clients.AI",
+      "sections": {
+        "baseUrl": "Base URL",
+        "authentication": {
+          "label": "Authentication",
+          "description": "Include your API key in the Authorization header:",
+          "example": "Authorization: Bearer encl_your_api_key_here"
+        },
+        "createCheckout": {
+          "label": "Create Checkout",
+          "endpoint": "POST /checkout",
+          "examplePayload": {
+            "agent_id": "agent_123",
+            "customer_email": "customer@example.com",
+            "product_name": "Premium Package",
+            "amount": 99.99,
+            "currency": "usd"
+          },
+          "exampleResponse": {
+            "success": true,
+            "checkout_url": "https://checkout.stripe.com/pay/...",
+            "payment_link_id": "link_abc123"
+          }
+        }
+      }
+    }
+  }
+}
