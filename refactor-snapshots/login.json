@@ -1,0 +1,31 @@
+{
+  "route": "/login",
+  "content": {
+    "logo": true,
+    "title": "Welcome Back",
+    "description": "Sign in to your account to continue",
+    "formFields": [
+      {
+        "label": "Email",
+        "placeholder": "you@example.com",
+        "type": "email",
+        "icon": "Mail"
+      },
+      {
+        "label": "Password",
+        "placeholder": "",
+        "type": "password",
+        "icon": "Lock"
+      }
+    ],
+    "submitButton": {
+      "default": "Sign In",
+      "loading": "Signing in..."
+    },
+    "links": {
+      "forgotPassword": "Forgot your password?",
+      "signUpPrompt": "Don't have an account?",
+      "signUpLink": "Sign up"
+    }
+  }
+}
