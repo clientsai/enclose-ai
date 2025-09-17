@@ -1,134 +1,203 @@
-# 🎉 Enclose.AI - Final Setup Steps
+# 🎯 FINAL SETUP - Complete Your Enclose.AI Deployment
 
-## ✅ What's Complete
-- **Supabase Connected**: All credentials configured
-- **Server Running**: http://localhost:3002
-- **Stripe Integration**: Platform keys ready
-- **Clients.AI Integration**: Webhook endpoints configured
+## Current Status
+✅ Code deployed to GitHub: https://github.com/clientsai/enclose-ai
+✅ Application on Vercel: https://enclose-ai.vercel.app (or latest deployment URL)
+✅ Helper tools created for configuration
+⏳ Waiting for Stripe keys
+⏳ Waiting for Supabase setup
 
-## 🔴 ONE CRITICAL STEP: Run Database Schema
+## 📋 QUICK SETUP CHECKLIST
 
-**I've opened your Supabase SQL Editor. Now:**
+### 1️⃣ Get Your Stripe Keys (5 minutes)
 
-1. **Copy the ENTIRE contents** of this file:
-   ```
-   /Users/ktown/Desktop/enclose-ai/COPY_TO_SUPABASE.sql
-   ```
+**Option A: Use the HTML Helper (RECOMMENDED)**
+1. Open the file that just opened in your browser: `get-stripe-info.html`
+2. Follow the links to get your Stripe keys
+3. Enter them in the form
+4. Click "Generate Environment Variables"
 
-2. **Paste into the SQL Editor** that just opened
+**Option B: Manual Collection**
+Get these from https://dashboard.stripe.com:
+- Secret Key (sk_test_... or sk_live_...)
+- Publishable Key (pk_test_... or pk_live_...)
+- Connect Client ID (ca_...)
+- Webhook Signing Secret (whsec_... - after creating webhook)
 
-3. **Click "Run"** (bottom right button)
+### 2️⃣ Configure Stripe Webhook (2 minutes)
 
-4. **You should see**: "Success. No rows returned"
+1. Go to: https://dashboard.stripe.com/webhooks/create
+2. Enter:
+   - **Endpoint URL**: `https://enclose-ai.vercel.app/api/stripe/webhooks`
+   - **Events**: Select these:
+     - checkout.session.completed
+     - payment_intent.succeeded
+     - payment_intent.payment_failed
+3. Copy the "Signing secret" (starts with whsec_)
 
-## 🧪 Test Your Setup
+### 3️⃣ Configure Stripe Connect OAuth (1 minute)
 
-### 1. Test Registration
+1. Go to: https://dashboard.stripe.com/settings/connect
+2. Under OAuth settings, add:
+   - **Redirect URI**: `https://enclose-ai.vercel.app/api/stripe/callback`
+3. Save changes
+
+### 4️⃣ Set Up Supabase (5 minutes)
+
+1. **Create Account**: https://supabase.com (free)
+2. **Create New Project**:
+   - Choose a name (e.g., "enclose-ai")
+   - Choose a database password (save it!)
+   - Select region closest to you
+3. **Run Database Schema**:
+   - Go to SQL Editor
+   - Click "New query"
+   - Copy everything from `supabase/schema.sql`
+   - Paste and click "Run"
+4. **Get Your Keys**:
+   - Go to Settings → API
+   - Copy:
+     - Project URL → `NEXT_PUBLIC_SUPABASE_URL`
+     - anon/public key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+     - service_role key → `SUPABASE_SERVICE_ROLE_KEY`
+5. **Enable Authentication**:
+   - Go to Authentication → Providers
+   - Enable "Email" provider
+
+### 5️⃣ Add Environment Variables to Vercel (3 minutes)
+
+**Option A: Use the Script (After creating .env.local)**
 ```bash
-# Open registration page
-open http://localhost:3002/register
+./setup-vercel-env.sh
 ```
 
-- Create an account with any email
-- You'll be redirected to dashboard
+**Option B: Manual via Dashboard**
+1. Go to: https://vercel.com/clientsais-projects/enclose-ai/settings/environment-variables
+2. Add each variable for Production, Preview, and Development:
 
-### 2. Test Stripe Connect
-In the dashboard, click "Connect Stripe Account":
-- It will open Stripe OAuth
-- Use your Stripe test account
-- Complete the connection
+```
+NEXT_PUBLIC_APP_URL=https://enclose-ai.vercel.app
 
-### 3. Create a Payment Link
-After connecting Stripe:
-- Enter product name: "Test Product"
-- Enter amount: 99.99
-- Click "Create Link"
-- Copy the generated link
+# From Stripe
+STRIPE_SECRET_KEY=[your_key]
+STRIPE_PUBLISHABLE_KEY=[your_key]
+STRIPE_CLIENT_ID=[your_key]
+STRIPE_WEBHOOK_SECRET=[your_key]
 
-### 4. Test Payment
-- Open the payment link
-- Use test card: `4242 4242 4242 4242`
-- Any future date, any CVC
-- Payment should succeed
+# From Supabase
+NEXT_PUBLIC_SUPABASE_URL=[your_url]
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[your_key]
+SUPABASE_SERVICE_ROLE_KEY=[your_key]
 
-## 📊 How It All Works
-
-### For Enclose.AI Users:
-1. **Sign up** → Creates account in your Supabase
-2. **Connect Stripe** → Links THEIR Stripe account
-3. **Create Payment Links** → Generates links for THEIR products
-4. **Receive Payments** → Money goes to THEIR Stripe
-
-### For Clients.AI Integration:
-1. **API Key** → User generates in Settings
-2. **Conversion Agent** → Calls Enclose API
-3. **Payment Link Created** → Returns checkout URL
-4. **Customer Pays** → Webhook notifies both systems
-
-## 🔑 Important URLs
-
-- **Homepage**: http://localhost:3002
-- **Dashboard**: http://localhost:3002/dashboard
-- **Settings/API Keys**: http://localhost:3002/settings
-- **Supabase Dashboard**: https://supabase.com/dashboard/project/jwimrbdqsqwjobdninhi
-
-## 💡 Stripe Connect Note
-
-The Client ID I added (`ca_RGDpx5...`) is a test ID. To get your real one:
-
-1. Go to: https://dashboard.stripe.com/test/connect/settings
-2. Find **OAuth settings** → **Client ID**
-3. Replace in `.env.local` if different
-
-## 🚨 Troubleshooting
-
-### If registration fails:
-- Check that you ran the SQL schema
-- Verify all tables were created in Supabase
-
-### If Stripe Connect fails:
-- Make sure you're in TEST mode in Stripe
-- Check that Connect is enabled in your Stripe account
-
-### If payment links don't work:
-- Ensure user has connected their Stripe account first
-- Check browser console for errors
-
-## 🔄 Clients.AI Integration Test
-
-To test with Clients.AI:
-
-1. **Get API Key** from Settings page
-2. **Call the API**:
-```bash
-curl -X POST http://localhost:3002/api/v1/checkout \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "agent_id": "test_agent",
-    "customer_email": "test@example.com",
-    "product_name": "Test Product",
-    "amount": 99.99
-  }'
+# Generated
+ENCRYPTION_KEY=[use: openssl rand -base64 32]
 ```
 
-3. **Response** will contain `checkout_url`
-4. **Webhook** will fire to Clients.AI on payment
+### 6️⃣ Redeploy Application (1 minute)
 
-## ✅ Success Checklist
+After adding all environment variables:
 
-- [ ] Database schema ran successfully
-- [ ] Can register new account
-- [ ] Can connect Stripe account
-- [ ] Can create payment link
-- [ ] Can process test payment
-- [ ] API key generation works
-- [ ] API endpoint responds
+**Option A: Command Line**
+```bash
+vercel --prod --yes
+```
 
-## 🎊 You're Done!
+**Option B: Vercel Dashboard**
+1. Go to: https://vercel.com/clientsais-projects/enclose-ai
+2. Click on latest deployment
+3. Click "..." menu → "Redeploy"
+4. Choose "Use existing Build Cache"
 
-Once the database schema is run, Enclose.AI is fully functional!
+## ✅ VERIFICATION CHECKLIST
+
+After deployment, test everything:
+
+### Test 1: Homepage
+- [ ] Visit https://enclose-ai.vercel.app
+- [ ] Page loads without errors
+- [ ] "Get Started" button visible
+
+### Test 2: Registration
+- [ ] Click "Get Started"
+- [ ] Fill out registration form
+- [ ] Submit successfully
+- [ ] Redirected to dashboard
+
+### Test 3: Stripe OAuth
+- [ ] In dashboard, click "Connect Stripe Account"
+- [ ] Redirected to Stripe OAuth
+- [ ] Authorize connection
+- [ ] Redirected back to dashboard
+
+### Test 4: Payment Link Creation
+- [ ] Create a test payment link
+- [ ] Copy the link
+- [ ] Open in new tab
+- [ ] Shows Stripe checkout
+
+### Test 5: API Keys
+- [ ] Go to Settings
+- [ ] Create an API key
+- [ ] Key displayed once
+- [ ] Key appears in list
+
+## 🚨 TROUBLESHOOTING
+
+### "Application error" on Vercel
+- Check all environment variables are set
+- Check Vercel function logs
+- Redeploy after fixing
+
+### "Database connection failed"
+- Verify Supabase project is not paused
+- Check Supabase keys are correct
+- Ensure schema.sql was run
+
+### "Stripe OAuth fails"
+- Verify redirect URI in Stripe Connect settings
+- Check STRIPE_CLIENT_ID is correct
+- Ensure using correct account (Safe Checkout)
+
+### "Webhook not receiving events"
+- Check webhook URL is correct
+- Verify signing secret
+- Check Stripe dashboard for webhook attempts
+
+## 🎊 SUCCESS INDICATORS
+
+You know everything is working when:
+1. ✅ You can create an account
+2. ✅ You can log in
+3. ✅ Dashboard loads without errors
+4. ✅ Stripe OAuth connects successfully
+5. ✅ Payment links can be created
+6. ✅ API keys can be generated
+
+## 📞 QUICK COMMANDS
+
+```bash
+# Check deployment status
+vercel ls
+
+# View logs
+vercel logs
+
+# Redeploy
+vercel --prod --yes
+
+# Run locally with production env
+vercel dev
+```
+
+## 🏁 FINAL NOTES
+
+- **Stripe Account**: Using "Safe Checkout" account
+- **No Impact on Clients.AI**: Separate webhooks, separate products
+- **Test Mode First**: Use test keys until everything works
+- **Custom Domain**: Can be added later in Vercel settings
 
 ---
 
-**Need help?** The app logs errors to browser console and terminal.
+**Your Enclose.AI platform is ready to go live as soon as you complete these steps!**
+
+The application is fully functional and waiting for your configuration. No code changes needed!

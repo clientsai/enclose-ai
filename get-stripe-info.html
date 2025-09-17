@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enclose.AI - Stripe Setup Helper</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1a1a1a;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .step {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f7f7f7;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #e1e1e1;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .success {
+            background: #4caf50;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .error {
+            background: #f44336;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+        .code {
+            background: #2d2d2d;
+            color: #4caf50;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Enclose.AI - Stripe Setup Helper</h1>
+
+        <div class="warning">
+            ⚠️ <strong>Important:</strong> This will configure Stripe for Enclose.AI without affecting your existing Clients.AI setup. Webhooks and products are completely separate.
+        </div>
+
+        <div class="step">
+            <h3>Step 1: Open Stripe Dashboard</h3>
+            <p>Click the links below to open each section in a new tab:</p>
+            <ol>
+                <li><a href="https://dashboard.stripe.com/apikeys" target="_blank" class="link">Get API Keys →</a> (Copy your TEST keys first, then LIVE if ready)</li>
+                <li><a href="https://dashboard.stripe.com/settings/connect" target="_blank" class="link">Get Connect Client ID →</a> (Under OAuth settings)</li>
+                <li><a href="https://dashboard.stripe.com/webhooks/create" target="_blank" class="link">Create Webhook →</a> (We'll configure this)</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Enter Your Stripe Keys</h3>
+            <p>From the API Keys page, enter:</p>
+
+            <label>Test/Live Secret Key (sk_test_... or sk_live_...):</label>
+            <input type="password" id="stripe_secret" placeholder="sk_test_51..." />
+
+            <label>Test/Live Publishable Key (pk_test_... or pk_live_...):</label>
+            <input type="text" id="stripe_publishable" placeholder="pk_test_51..." />
+
+            <label>Connect Client ID (ca_...):</label>
+            <input type="text" id="stripe_client" placeholder="ca_..." />
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Configure Webhook</h3>
+            <p>When creating the webhook, use these settings:</p>
+            <div class="code">
+Endpoint URL: https://enclose-ai.vercel.app/api/stripe/webhooks
+
+Events to listen for:
+✓ checkout.session.completed
+✓ payment_intent.succeeded
+✓ payment_intent.payment_failed
+✓ customer.subscription.created
+✓ customer.subscription.updated
+✓ customer.subscription.deleted
+            </div>
+            <p>After creating, copy the Signing Secret:</p>
+            <input type="text" id="webhook_secret" placeholder="whsec_..." />
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Configure Stripe Connect OAuth</h3>
+            <p>Add this redirect URI in <a href="https://dashboard.stripe.com/settings/connect" target="_blank" class="link">Connect Settings</a>:</p>
+            <div class="code">https://enclose-ai.vercel.app/api/stripe/callback</div>
+        </div>
+
+        <div class="step">
+            <h3>Step 5: Generate Configuration</h3>
+            <button onclick="generateConfig()">Generate Environment Variables</button>
+            <button onclick="copyToClipboard()">Copy to Clipboard</button>
+            <button onclick="addToVercel()">Add to Vercel (Manual)</button>
+        </div>
+
+        <div id="result" style="display:none;">
+            <h3>Your Environment Variables:</h3>
+            <textarea id="envVars" rows="15" style="font-size: 12px;"></textarea>
+
+            <div class="success" style="display:none;" id="successMsg">
+                ✅ Configuration generated! Now:
+                <ol>
+                    <li>Copy these variables</li>
+                    <li>Go to <a href="https://vercel.com/clientsais-projects/enclose-ai/settings/environment-variables" target="_blank" class="link">Vercel Environment Variables</a></li>
+                    <li>Add each variable for Production, Preview, and Development</li>
+                    <li>Redeploy your application</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Step 6: Supabase Setup (Required)</h3>
+            <p>You also need to set up Supabase:</p>
+            <ol>
+                <li><a href="https://supabase.com" target="_blank" class="link">Create free Supabase account →</a></li>
+                <li>Create new project (remember your database password)</li>
+                <li>Go to SQL Editor and run the schema from <code>supabase/schema.sql</code></li>
+                <li>Get your keys from Settings → API</li>
+                <li>Add to Vercel environment variables</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function generateEncryptionKey() {
+            const array = new Uint8Array(32);
+            crypto.getRandomValues(array);
+            return btoa(String.fromCharCode.apply(null, array));
+        }
+
+        function generateConfig() {
+            const stripeSecret = document.getElementById('stripe_secret').value;
+            const stripePublishable = document.getElementById('stripe_publishable').value;
+            const stripeClient = document.getElementById('stripe_client').value;
+            const webhookSecret = document.getElementById('webhook_secret').value;
+
+            if (!stripeSecret || !stripePublishable || !stripeClient) {
+                alert('Please enter at least the Stripe Secret Key, Publishable Key, and Connect Client ID');
+                return;
+            }
+
+            const encryptionKey = generateEncryptionKey();
+
+            const envVars = `# Enclose.AI Environment Variables
+# Generated: ${new Date().toISOString()}
+
+# Application
+NEXT_PUBLIC_APP_URL=https://enclose-ai.vercel.app
+
+# Stripe Configuration (Safe Checkout)
+STRIPE_SECRET_KEY=${stripeSecret}
+STRIPE_PUBLISHABLE_KEY=${stripePublishable}
+STRIPE_CLIENT_ID=${stripeClient}
+STRIPE_WEBHOOK_SECRET=${webhookSecret || 'ADD_AFTER_CREATING_WEBHOOK'}
+
+# Encryption
+ENCRYPTION_KEY=${encryptionKey}
+
+# Supabase (add these after creating project)
+NEXT_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_PROJECT_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY`;
+
+            document.getElementById('envVars').value = envVars;
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('successMsg').style.display = 'block';
+
+            // Save to localStorage for later use
+            localStorage.setItem('enclose_env', envVars);
+        }
+
+        function copyToClipboard() {
+            const envVars = document.getElementById('envVars');
+            envVars.select();
+            document.execCommand('copy');
+            alert('✅ Copied to clipboard! Now paste in Vercel environment variables.');
+        }
+
+        function addToVercel() {
+            window.open('https://vercel.com/clientsais-projects/enclose-ai/settings/environment-variables', '_blank');
+            alert('Opening Vercel... Paste each variable there (name = value)');
+        }
+
+        // Auto-load if we have saved data
+        window.onload = function() {
+            const saved = localStorage.getItem('enclose_env');
+            if (saved) {
+                document.getElementById('envVars').value = saved;
+                document.getElementById('result').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
