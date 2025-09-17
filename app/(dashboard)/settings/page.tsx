@@ -93,7 +93,7 @@ export default function SettingsPage() {
     try {
       await supabase
         .from('api_keys')
-        .update({ active: false, revoked_at: new Date().toISOString() })
+        .update({ active: false, revoked_at: new Date().toISOString() } as any)
         .eq('id', keyId)
 
       loadSettings()
