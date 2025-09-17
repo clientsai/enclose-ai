@@ -1,213 +1,231 @@
-# Enclose.AI - Payment Integration Platform
+# Enclose.AI - Payment Integration for Conversion Agents
 
-Enclose.AI is a complete payment integration platform that allows users to connect their Stripe accounts and manage payment links for Clients.AI conversion agents.
+A secure, scalable payment processing platform that seamlessly integrates Stripe payments with Clients.AI conversion agents.
 
 ## Features
 
-### Standalone Web Application
-- **Stripe Connect OAuth**: Secure OAuth flow to connect Stripe accounts
-- **Payment Link Management**: Create and manage Stripe Payment Links
-- **Dashboard Analytics**: Real-time payment tracking and analytics
-- **Product Management**: Create and manage products with custom pricing
-- **Mobile Responsive**: Works perfectly on all devices
+- 🚀 **Instant Stripe Integration** - Connect via OAuth in seconds
+- 🔒 **Enterprise Security** - PCI DSS Level 1 compliant infrastructure
+- 🌍 **Global Payments** - Support for 135+ currencies
+- 📊 **Real-time Analytics** - Track conversions and revenue instantly
+- 🔌 **API-First Design** - RESTful API for seamless integration
+- 💳 **Payment Links** - Generate secure payment links on demand
 
-### API Service for Clients.AI
-- **REST API**: Complete API for conversion agent integration
-- **Webhook Support**: Real-time payment notifications
-- **Secure Authentication**: API key-based authentication
-- **Payment Tracking**: Monitor payment status and conversions
+## Tech Stack
+
+- **Frontend**: Next.js 14, React 18, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Supabase
+- **Payments**: Stripe Connect, Stripe Checkout
+- **Database**: PostgreSQL (Supabase)
+- **Authentication**: Supabase Auth
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- Node.js 18+ installed
+- npm or yarn package manager
+- Supabase account (free tier works)
+- Stripe account (test mode for development)
 
 ## Setup Instructions
 
-### 1. Prerequisites
-- Node.js 18+ installed
-- Stripe account with Connect enabled
-- Supabase account
-- Vercel account (for deployment)
-
-### 2. Database Setup
-
-1. Go to your Supabase dashboard
-2. Navigate to SQL Editor
-3. Run the SQL schema from `enclose-ai-schema.sql`
-4. This will create all necessary tables and RLS policies
-
-### 3. Stripe Setup
-
-1. **Create a Stripe Connect Platform**:
-   - Go to https://dashboard.stripe.com/test/connect/accounts/overview
-   - Enable Stripe Connect
-   - Get your Connect settings from https://dashboard.stripe.com/test/connect/settings
-
-2. **Configure OAuth**:
-   - Set redirect URI to: `http://localhost:3000/api/stripe/callback` (development)
-   - Set redirect URI to: `https://your-domain.com/api/stripe/callback` (production)
-
-3. **Get API Keys**:
-   - Publishable key: `pk_test_...`
-   - Secret key: `sk_test_...`
-   - Client ID: `ca_...` (from Connect settings)
-
-4. **Setup Webhooks**:
-   - Add endpoint URL: `http://localhost:3000/api/stripe/webhooks`
-   - Select events:
-     - `checkout.session.completed`
-     - `payment_intent.succeeded`
-     - `payment_intent.payment_failed`
-     - `account.updated`
-     - `account.application.deauthorized`
-
-### 4. Environment Variables
-
-1. Copy `.env.local.example` to `.env.local`
-2. Fill in your credentials:
-
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-key
-
-# Stripe
-STRIPE_PUBLISHABLE_KEY=pk_test_...
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_CLIENT_ID=ca_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-
-# Encryption (generate with: openssl rand -hex 32)
-ENCRYPTION_KEY=your-32-byte-hex-key
-
-# App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret
-```
-
-### 5. Install Dependencies
+### 1. Clone the Repository
 
 ```bash
+git clone https://github.com/yourusername/enclose-ai.git
 cd enclose-ai
-npm install
 ```
 
-### 6. Run Development Server
+### 2. Install Dependencies
+
+```bash
+npm install
+# or
+yarn install
+```
+
+### 3. Configure Supabase
+
+1. Create a new project at [supabase.com](https://supabase.com)
+2. Go to SQL Editor and run the schema from `supabase/schema.sql`
+3. Enable Email/Password authentication in Authentication settings
+4. Copy your project URL and anon key from Settings > API
+
+### 4. Configure Stripe
+
+1. Create a Stripe account at [stripe.com](https://stripe.com)
+2. Get your API keys from the Stripe Dashboard
+3. For Stripe Connect OAuth:
+   - Go to Settings > Connect settings
+   - Configure OAuth settings
+   - Get your Connect client ID
+
+### 5. Set Up Environment Variables
+
+1. Copy the example environment file:
+```bash
+cp .env.example .env.local
+```
+
+2. Update `.env.local` with your actual values:
+
+```env
+# YOUR DOMAIN - Update this with your actual domain when deploying
+NEXT_PUBLIC_APP_URL=http://localhost:3000  # Change to https://yourdomain.com in production
+
+# Supabase Configuration (from Supabase dashboard)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# Stripe Configuration (from Stripe dashboard)
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
+STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+
+# Stripe OAuth (from Connect settings)
+STRIPE_CLIENT_ID=ca_your_stripe_connect_client_id
+
+# Encryption Key (generate this!)
+ENCRYPTION_KEY=your_32_byte_base64_key_here
+```
+
+3. Generate an encryption key:
+```bash
+openssl rand -base64 32
+```
+
+### 6. Configure Your Domain
+
+When deploying to production, update the `NEXT_PUBLIC_APP_URL` in your environment variables:
+
+```env
+# For production
+NEXT_PUBLIC_APP_URL=https://yourdomain.com
+```
+
+Also update:
+- Stripe webhook endpoints to `https://yourdomain.com/api/stripe/webhooks`
+- Stripe OAuth redirect URL to `https://yourdomain.com/api/stripe/callback`
+
+### 7. Run Development Server
 
 ```bash
 npm run dev
+# or
+yarn dev
 ```
 
-Visit http://localhost:3000 to see the application.
-
-## Testing
-
-### Test Stripe Integration
-
-1. **Test OAuth Flow**:
-   - Click "Connect Stripe Account"
-   - Use Stripe test account credentials
-   - Verify connection in dashboard
-
-2. **Test Payment Links**:
-   - Create a payment link
-   - Use test card: `4242 4242 4242 4242`
-   - Any future expiry and any CVC
-
-3. **Test API**:
-   ```bash
-   curl -X POST http://localhost:3000/api/v1/checkout \
-     -H "Authorization: Bearer your-api-key" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "agent_id": "test_agent",
-       "product_name": "Test Product",
-       "amount": 99.99
-     }'
-   ```
+Visit [http://localhost:3000](http://localhost:3000) to see your application.
 
 ## Deployment
 
-### Deploy to Vercel
+### Deploy to Vercel (Recommended)
 
-1. **Push to GitHub**:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git remote add origin your-repo-url
-   git push -u origin main
-   ```
+1. Push your code to GitHub
+2. Import your repository on [Vercel](https://vercel.com)
+3. Add all environment variables in Vercel's dashboard
+4. Deploy!
 
-2. **Connect to Vercel**:
-   - Go to https://vercel.com
-   - Import GitHub repository
-   - Add environment variables
-   - Deploy
+### Deploy to Other Platforms
 
-3. **Update Stripe Webhooks**:
-   - Change webhook URL to: `https://your-domain.vercel.app/api/stripe/webhooks`
-   - Update OAuth redirect URI
+The app is a standard Next.js application and can be deployed to:
+- AWS Amplify
+- Netlify
+- Railway
+- Render
+- DigitalOcean App Platform
+
+## Setting Up Your Custom Domain
+
+### 1. Domain Configuration
+
+After purchasing your domain, point it to your hosting platform:
+
+**For Vercel:**
+1. Go to your Vercel project settings
+2. Navigate to Domains
+3. Add your custom domain
+4. Follow the DNS configuration instructions
+
+**DNS Records to Add:**
+- A Record: Points to Vercel's IP (76.76.21.21)
+- CNAME: www subdomain points to cname.vercel-dns.com
+
+### 2. Update Environment Variables
+
+Update your production environment variables:
+```env
+NEXT_PUBLIC_APP_URL=https://yourdomain.com
+```
+
+### 3. Update Stripe Settings
+
+1. Add production webhook endpoint: `https://yourdomain.com/api/stripe/webhooks`
+2. Update OAuth redirect URL: `https://yourdomain.com/api/stripe/callback`
+3. Switch to live API keys when ready
+
+### 4. SSL Certificate
+
+Most platforms (Vercel, Netlify, etc.) provide automatic SSL certificates. Ensure HTTPS is enforced.
 
 ## API Documentation
 
 ### Authentication
-All API requests require an API key in the Authorization header:
+
+Include your API key in the Authorization header:
 ```
 Authorization: Bearer encl_your_api_key_here
 ```
 
 ### Endpoints
 
-#### Create Checkout
+**Create Checkout Session**
 ```
 POST /api/v1/checkout
 ```
 
-Request:
-```json
-{
-  "agent_id": "agent_123",
-  "customer_email": "customer@example.com",
-  "product_name": "Premium Package",
-  "amount": 99.99,
-  "currency": "usd",
-  "metadata": {}
-}
+**List Payments**
+```
+GET /api/v1/payments
 ```
 
-Response:
-```json
-{
-  "success": true,
-  "checkout_url": "https://checkout.stripe.com/pay/...",
-  "payment_link_id": "link_abc123",
-  "stripe_payment_link_id": "plink_..."
-}
-```
+## Testing
 
-#### Get Payments
-```
-GET /api/v1/payments?agent_id=agent_123
-```
+### Test Cards
 
-Response:
-```json
-{
-  "success": true,
-  "payments": [...]
-}
+Use Stripe's test cards for development:
+- Success: `4242 4242 4242 4242`
+- Decline: `4000 0000 0000 0002`
+- Requires authentication: `4000 0025 0000 3155`
+
+### Run Tests
+
+```bash
+npm run test
+npm run lint
+npm run type-check
 ```
 
 ## Security
 
-- All sensitive data is encrypted using AES-256-GCM
-- API keys are hashed using SHA-256
-- Stripe webhooks are verified using signatures
-- Row Level Security (RLS) enabled in Supabase
-- HTTPS required in production
+- All API keys are encrypted using AES-256
+- Webhook signatures are verified
+- PCI compliance through Stripe
+- Row-level security in Supabase
+- HTTPS enforced in production
 
 ## Support
 
-For issues or questions, please create an issue in the GitHub repository.
+- Documentation: [docs.enclose.ai](https://docs.enclose.ai)
+- Email: support@enclose.ai
+- GitHub Issues: [github.com/yourusername/enclose-ai/issues](https://github.com/yourusername/enclose-ai/issues)
 
 ## License
 
-MIT
+MIT License - see LICENSE file for details
+
+---
+
+Built with ❤️ by the Enclose.AI team

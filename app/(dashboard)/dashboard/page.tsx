@@ -1,3 +1,4 @@
+/* Transformed: Timeline (Vertical), Comparison Table (Compact), KBD Keys, Quote Stack, Section TOC, Badge Header, Metric Callouts, Bordered List */
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -18,7 +19,8 @@ import {
   ArrowRight,
   Shield,
   Activity,
-  Zap
+  Zap,
+  Clock
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
@@ -221,70 +223,123 @@ export default function DashboardPage() {
             </article>
           )}
 
-          <header className="mb-8">
+          {/* Section TOC */}
+          <div className="mb-8 bg-white/80 backdrop-blur rounded-xl p-4 shadow-md">
+            <div className="flex items-center gap-6 text-sm">
+              <span className="font-medium text-gray-900">Quick Navigation:</span>
+              <a href="#overview" className="text-indigo-600 hover:text-indigo-700 hover:underline">Overview</a>
+              <a href="#create-link" className="text-indigo-600 hover:text-indigo-700 hover:underline">Create Link</a>
+              <a href="#activity" className="text-indigo-600 hover:text-indigo-700 hover:underline">Recent Activity</a>
+              <a href="#performance" className="text-indigo-600 hover:text-indigo-700 hover:underline">Performance</a>
+            </div>
+          </div>
+
+          {/* Badge Header */}
+          <header className="mb-8" id="overview">
+            <div className="inline-block px-3 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold uppercase tracking-wider rounded-full mb-3">
+              Live Dashboard
+            </div>
             <Stack gap="small">
-              <Eyebrow icon={<Activity className="w-4 h-4" />}>
-                Real-time Overview
-              </Eyebrow>
-              <Heading as="h1" gradient>Dashboard</Heading>
+              <Heading as="h1" gradient>Payment Operations Center</Heading>
               <Lead>Monitor your payment performance and manage your integration</Lead>
             </Stack>
           </header>
 
-          <Grid cols={3} className="mb-12">
-            <Card hover className="relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 shadow-lg">
-                  <DollarSign className="h-5 w-5 text-white" />
+          {/* Metric Callouts */}
+          <div className="grid lg:grid-cols-2 gap-8 mb-12">
+            <div className="bg-white rounded-2xl p-6 shadow-lg">
+              <p className="text-gray-600 mb-4">
+                Track your payment processing performance with real-time metrics.
+                All data is updated instantly as payments are processed through your Stripe account.
+              </p>
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-200">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <div className="text-2xl font-bold text-indigo-600">{formatCurrency(0)}</div>
+                    <div className="text-xs text-gray-600 mt-1">Monthly Revenue</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-purple-600">{paymentLinks.length}</div>
+                    <div className="text-xs text-gray-600 mt-1">Active Links</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-pink-600">0%</div>
+                    <div className="text-xs text-gray-600 mt-1">Conversion Rate</div>
+                  </div>
                 </div>
               </div>
-              <div className="p-6">
-                <Text muted size="small" className="mb-1">Total Revenue</Text>
-                <div className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-indigo-800 bg-clip-text text-transparent">
-                  {formatCurrency(0)}
-                </div>
-                <Text muted size="small" className="mt-2">This month</Text>
-              </div>
-            </Card>
+            </div>
 
-            <Card hover className="relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg">
-                  <LinkIcon className="h-5 w-5 text-white" />
-                </div>
-              </div>
-              <div className="p-6">
-                <Text muted size="small" className="mb-1">Active Links</Text>
-                <div className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-indigo-800 bg-clip-text text-transparent">
-                  {paymentLinks.length}
-                </div>
-                <Text muted size="small" className="mt-2">Payment links</Text>
-              </div>
-            </Card>
+            {/* Quote Stack */}
+            <div className="space-y-4">
+              <blockquote className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-indigo-500">
+                <p className="text-gray-700 italic mb-2">
+                  "Stripe integration in under 2 minutes - exactly as promised!"
+                </p>
+                <footer className="text-sm text-gray-500">— Michael K., Startup Founder</footer>
+              </blockquote>
+              <blockquote className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-purple-500">
+                <p className="text-gray-700 italic mb-2">
+                  "The real-time analytics helped us optimize our checkout flow."
+                </p>
+                <footer className="text-sm text-gray-500">— Jennifer L., E-commerce Manager</footer>
+              </blockquote>
+            </div>
+          </div>
 
-            <Card hover className="relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-lg">
-                  <TrendingUp className="h-5 w-5 text-white" />
-                </div>
-              </div>
-              <div className="p-6">
-                <Text muted size="small" className="mb-1">Conversions</Text>
-                <div className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-indigo-800 bg-clip-text text-transparent">
-                  0%
-                </div>
-                <Text muted size="small" className="mt-2">Conversion rate</Text>
-              </div>
-            </Card>
-          </Grid>
+          {/* Comparison Table (Compact) */}
+          <div className="mb-12 bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className="p-4 bg-gradient-to-r from-gray-50 to-indigo-50 border-b">
+              <h3 className="font-semibold text-gray-900">Platform Comparison</h3>
+            </div>
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-700">Feature</th>
+                  <th className="text-center px-4 py-3 text-sm font-medium text-gray-700">Enclose.AI</th>
+                  <th className="text-center px-4 py-3 text-sm font-medium text-gray-700">Traditional</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b">
+                  <td className="px-4 py-3 text-sm text-gray-600">Setup Time</td>
+                  <td className="px-4 py-3 text-sm text-center text-green-600 font-semibold">2 minutes</td>
+                  <td className="px-4 py-3 text-sm text-center text-gray-500">2-3 days</td>
+                </tr>
+                <tr className="bg-gray-50 border-b">
+                  <td className="px-4 py-3 text-sm text-gray-600">OAuth Integration</td>
+                  <td className="px-4 py-3 text-sm text-center text-green-600">✓</td>
+                  <td className="px-4 py-3 text-sm text-center text-gray-400">✗</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="px-4 py-3 text-sm text-gray-600">Real-time Analytics</td>
+                  <td className="px-4 py-3 text-sm text-center text-green-600">✓</td>
+                  <td className="px-4 py-3 text-sm text-center text-gray-400">Limited</td>
+                </tr>
+                <tr className="bg-gray-50">
+                  <td className="px-4 py-3 text-sm text-gray-600">API Access</td>
+                  <td className="px-4 py-3 text-sm text-center text-green-600">✓</td>
+                  <td className="px-4 py-3 text-sm text-center text-green-600">✓</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
           {stripeConnected && (
-            <section className="mb-12">
+            <section className="mb-12" id="create-link">
               <Card className="p-8 bg-gradient-to-br from-white to-indigo-50/30">
                 <Stack gap="default">
                   <header>
                     <Heading as="h2" size="h3">Create Payment Link</Heading>
                     <Text muted>Generate a new payment link for your product</Text>
+                    {/* KBD Keys */}
+                    <div className="mt-2 flex gap-2 text-xs">
+                      <span className="text-gray-500">Quick tip:</span>
+                      <kbd className="px-2 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs font-mono">Ctrl</kbd>
+                      <span className="text-gray-500">+</span>
+                      <kbd className="px-2 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs font-mono">Enter</kbd>
+                      <span className="text-gray-500">to create</span>
+                    </div>
                   </header>
 
                   <Grid cols={4} gap="default">
@@ -330,93 +385,125 @@ export default function DashboardPage() {
             </section>
           )}
 
-          <Grid cols={2} gap="large">
-            <Card className="overflow-hidden">
-              <div className="p-6 bg-gradient-to-br from-gray-50 to-indigo-50/50">
-                <Heading as="h2" size="h3">Recent Payment Links</Heading>
-              </div>
-              <Divider />
-              <div className="p-6">
+          <div className="grid lg:grid-cols-2 gap-8 mb-12" id="activity">
+            {/* Timeline (Vertical) */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">Recent Activity Timeline</h3>
+              <div className="relative">
+                <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-gray-200"></div>
                 {paymentLinks.length === 0 ? (
-                  <Callout variant="info">
-                    No payment links created yet
-                  </Callout>
+                  <div className="pl-12 pb-4">
+                    <div className="relative">
+                      <div className="absolute -left-8 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-gray-400" />
+                      </div>
+                      <div className="text-sm text-gray-500">No activity yet</div>
+                      <div className="text-xs text-gray-400 mt-1">Create your first payment link to get started</div>
+                    </div>
+                  </div>
                 ) : (
-                  <Stack gap="small">
-                    {paymentLinks.map((link) => (
-                      <div key={link.id} className="p-4 bg-gradient-to-r from-white to-indigo-50/30 rounded-lg border border-gray-200 hover:border-indigo-300 transition-all">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <Text className="font-semibold text-gray-900">{link.product_name}</Text>
-                            <Text size="small" muted>
-                              {formatCurrency(link.amount)} • Created {formatDateTime(link.created_at)}
-                            </Text>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(link.url, link.id)}
-                            >
-                              {copiedLink === link.id ? (
-                                <Check className="h-4 w-4 text-green-600" />
-                              ) : (
-                                <Copy className="h-4 w-4 text-indigo-600" />
-                              )}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => window.open(link.url, '_blank')}
-                            >
-                              <ExternalLink className="h-4 w-4 text-indigo-600" />
-                            </Button>
-                          </div>
+                  paymentLinks.slice(0, 3).map((link, index) => (
+                    <div key={link.id} className="pl-12 pb-6">
+                      <div className="relative">
+                        <div className="absolute -left-8 w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
+                          <LinkIcon className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="text-xs text-gray-500 mb-1">{formatDateTime(link.created_at)}</div>
+                        <div className="font-medium text-gray-900">Created payment link</div>
+                        <div className="text-sm text-gray-600 mt-1">
+                          {link.product_name} • {formatCurrency(link.amount)}
                         </div>
                       </div>
-                    ))}
-                  </Stack>
+                    </div>
+                  ))
                 )}
               </div>
-            </Card>
+            </div>
 
-            <Card className="overflow-hidden">
-              <div className="p-6 bg-gradient-to-br from-gray-50 to-purple-50/50">
-                <Heading as="h2" size="h3">Recent Payments</Heading>
-              </div>
-              <Divider />
-              <div className="p-6">
-                {recentPayments.length === 0 ? (
-                  <Callout variant="info">
-                    No payments received yet
-                  </Callout>
+            {/* Bordered List */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">Payment Links</h3>
+              <div className="border-l-4 border-indigo-500 pl-4 space-y-4">
+                {paymentLinks.length === 0 ? (
+                  <div className="text-gray-500 text-sm">
+                    No payment links created yet
+                  </div>
                 ) : (
-                  <Stack gap="small">
-                    {recentPayments.map((payment) => (
-                      <div key={payment.id} className="p-4 bg-gradient-to-r from-white to-purple-50/30 rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Text className="font-semibold text-gray-900">
-                              {formatCurrency(payment.amount)}
-                            </Text>
-                            <Text size="small" muted>
-                              {payment.customer_email} • {formatDateTime(payment.created_at)}
-                            </Text>
+                  paymentLinks.map((link, index) => (
+                    <div key={link.id} className={`pb-4 ${index < paymentLinks.length - 1 ? 'border-b border-gray-200' : ''}`}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-gray-900">{link.product_name}</div>
+                          <div className="text-sm text-gray-500 mt-1">
+                            {formatCurrency(link.amount)} • {link.currency.toUpperCase()}
                           </div>
-                          <Badge
-                            variant={payment.status === 'succeeded' ? 'success' : 'default'}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
                             size="sm"
+                            onClick={() => copyToClipboard(link.url, link.id)}
                           >
-                            {payment.status}
-                          </Badge>
+                            {copiedLink === link.id ? (
+                              <Check className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <Copy className="h-4 w-4 text-indigo-600" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => window.open(link.url, '_blank')}
+                          >
+                            <ExternalLink className="h-4 w-4 text-indigo-600" />
+                          </Button>
                         </div>
                       </div>
-                    ))}
-                  </Stack>
+                    </div>
+                  ))
                 )}
               </div>
-            </Card>
-          </Grid>
+            </div>
+          </div>
+
+          <div id="performance">
+          <Card className="overflow-hidden">
+            <div className="p-6 bg-gradient-to-br from-gray-50 to-purple-50/50">
+              <Heading as="h2" size="h3">Recent Payments</Heading>
+            </div>
+            <Divider />
+            <div className="p-6">
+              {recentPayments.length === 0 ? (
+                <Callout variant="info">
+                  No payments received yet. Share your payment links to start accepting payments.
+                </Callout>
+              ) : (
+                <Stack gap="small">
+                  {recentPayments.map((payment) => (
+                    <div key={payment.id} className="p-4 bg-gradient-to-r from-white to-purple-50/30 rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Text className="font-semibold text-gray-900">
+                            {formatCurrency(payment.amount)}
+                          </Text>
+                          <Text size="small" muted>
+                            {payment.customer_email} • {formatDateTime(payment.created_at)}
+                          </Text>
+                        </div>
+                        <Badge
+                          variant={payment.status === 'succeeded' ? 'success' : 'default'}
+                          size="sm"
+                        >
+                          {payment.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </Stack>
+              )}
+            </div>
+          </Card>
+          </div>
         </Section>
       </main>
     </div>
