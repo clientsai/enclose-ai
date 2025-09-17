@@ -91,7 +91,7 @@ export default function SettingsPage() {
     if (!confirm('Are you sure you want to delete this API key?')) return
 
     try {
-      await supabaseAdmin
+      await supabase
         .from('api_keys')
         .update({ active: false, revoked_at: new Date().toISOString() })
         .eq('id', keyId)
