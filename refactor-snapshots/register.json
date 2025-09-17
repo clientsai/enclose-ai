@@ -1,0 +1,48 @@
+{
+  "route": "/register",
+  "content": {
+    "logo": true,
+    "title": "Create Your Account",
+    "description": "Start accepting payments in minutes",
+    "formFields": [
+      {
+        "label": "Full Name",
+        "placeholder": "John Doe",
+        "type": "text",
+        "icon": "User"
+      },
+      {
+        "label": "Email",
+        "placeholder": "you@example.com",
+        "type": "email",
+        "icon": "Mail"
+      },
+      {
+        "label": "Password",
+        "placeholder": "8+ characters",
+        "type": "password",
+        "icon": "Lock"
+      },
+      {
+        "label": "Confirm Password",
+        "placeholder": "Re-enter password",
+        "type": "password",
+        "icon": "Lock"
+      }
+    ],
+    "submitButton": {
+      "default": "Create Account",
+      "loading": "Creating Account..."
+    },
+    "legal": {
+      "text": "By creating an account, you agree to our",
+      "termsLink": "Terms of Service",
+      "privacyLink": "Privacy Policy",
+      "connector": "and"
+    },
+    "footer": {
+      "prompt": "Already have an account?",
+      "link": "Sign in"
+    }
+  }
+}
