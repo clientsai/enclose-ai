@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Check, X, ArrowRight, Sparkles, Shield, Zap, Building, HelpCircle } from 'lucide-react'
 import Logo from '@/components/Logo'
 import { Button } from '@/components/ui/button'
+import PricingCheckout from '@/components/PricingCheckout'
 
 export default function PricingPage() {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly')
@@ -130,15 +131,15 @@ export default function PricingPage() {
               </Link>
             </div>
             <div className="flex items-center gap-4">
-              <Link href="/login">
-                <Button variant="outline">Sign In</Button>
-              </Link>
-              <Link href="/register">
-                <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
+              <Button variant="outline" asChild>
+                <Link href="/login">Sign In</Link>
+              </Button>
+              <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700" asChild>
+                <Link href="/register">
                   Get Started
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -224,19 +225,12 @@ export default function PricingPage() {
                   </span>
                 </div>
 
-                <Link href={plan.enterprise ? '/contact-sales' : '/register'}>
-                  <Button
-                    className={`w-full ${
-                      plan.highlighted
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
-                        : ''
-                    }`}
-                    variant={plan.highlighted ? 'default' : 'outline'}
-                  >
-                    {plan.cta}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+                <PricingCheckout
+                  plan={plan.enterprise ? 'enterprise' : plan.name.toLowerCase() as 'starter' | 'professional'}
+                  billing={billingPeriod}
+                  highlighted={plan.highlighted}
+                  cta={plan.cta}
+                />
 
                 <div className="mt-8 space-y-3">
                   <p className="text-sm font-semibold text-gray-900 mb-4">Everything in {plan.name}:</p>
@@ -308,12 +302,14 @@ export default function PricingPage() {
 
           <div className="mt-12 text-center">
             <p className="text-gray-600 mb-4">Still have questions?</p>
-            <Link href="/contact">
-              <Button variant="outline">
-                Contact Support
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+            <Button variant="outline" asChild>
+              <Link href="/contact">
+                <span className="flex items-center">
+                  Contact Support
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </span>
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -327,12 +323,14 @@ export default function PricingPage() {
           <p className="text-xl text-gray-600 mb-8">
             No credit card required. Cancel anytime.
           </p>
-          <Link href="/register">
-            <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
-              Get Started Free
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
+          <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700" asChild>
+            <Link href="/register">
+              <span className="flex items-center">
+                Get Started Free
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </span>
+            </Link>
+          </Button>
         </div>
       </section>
     </div>
