@@ -33,7 +33,7 @@ Before you begin, ensure you have:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/enclose-ai.git
+git clone https://github.com/successxx/enclose-ai.git
 cd enclose-ai
 ```
 
@@ -220,7 +220,7 @@ npm run type-check
 
 - Documentation: [docs.enclose.ai](https://docs.enclose.ai)
 - Email: support@enclose.ai
-- GitHub Issues: [github.com/yourusername/enclose-ai/issues](https://github.com/yourusername/enclose-ai/issues)
+- GitHub Issues: [github.com/successxx/enclose-ai/issues](https://github.com/successxx/enclose-ai/issues)
 
 ## License
 
