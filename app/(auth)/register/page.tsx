@@ -25,6 +25,28 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null)
   const [showDetails, setShowDetails] = useState(false)
 
+  // Check if Supabase is properly configured
+  if (!supabase) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+          <div className="mb-4">
+            <Shield className="w-12 h-12 text-red-500 mx-auto" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Configuration Error</h2>
+          <p className="text-gray-600 mb-6">
+            The application is not properly configured. Please contact support or check the deployment settings.
+          </p>
+          <Link href="/">
+            <Button className="w-full">
+              Return to Homepage
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -43,6 +65,10 @@ export default function RegisterPage() {
     }
 
     try {
+      if (!supabase) {
+        throw new Error('Supabase client not initialized')
+      }
+
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
