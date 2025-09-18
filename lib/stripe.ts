@@ -76,7 +76,7 @@ export async function createConnectedAccountPaymentLink(
           unit_amount: Math.round(amount * 100),
         },
         quantity: 1,
-      },
+      } as any,
     ],
     after_completion: {
       type: 'redirect',

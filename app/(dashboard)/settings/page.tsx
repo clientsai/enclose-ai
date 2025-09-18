@@ -1,4 +1,4 @@
-/* Transformed: Callout—Muted, Pros/Cons Table, Mini Tabs (CSS-only), FAQ Strip, Key Takeaways, Code Snippet Box, Legal Clause List, Expandable Excerpt */
+/* Settings Page - API Keys, Webhooks, and Account Management */
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -9,81 +9,104 @@ import { generateApiKey, hashApiKey, getApiKeyPrefix } from '@/lib/encryption'
 import { formatDateTime } from '@/lib/utils'
 import { Copy, Eye, EyeOff, Key, Trash2, Plus, Check, LogOut, ArrowLeft, Code, Shield, Terminal, Sparkles, FileCode, ChevronDown, ChevronUp, AlertCircle, CheckCircle, X } from 'lucide-react'
 import Logo from '@/components/Logo'
-
-import { Section, Stack, Grid } from '@/components/premium/Section'
-import { Heading, Text, Eyebrow, Prose } from '@/components/premium/Typography'
-import { Button, Card, Divider, Badge, Callout, Tabs } from '@/components/premium/UI'
-import { FormField, Label, Input } from '@/components/premium/Forms'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 
 export default function SettingsPage() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
-  const [apiKeys, setApiKeys] = useState<any[]>([])
-  const [newKeyName, setNewKeyName] = useState('')
-  const [creatingKey, setCreatingKey] = useState(false)
-  const [newKey, setNewKey] = useState<string | null>(null)
-  const [copiedKey, setCopiedKey] = useState(false)
-  const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'api' | 'webhooks' | 'security'>('api')
-  const [expandedExcerpt, setExpandedExcerpt] = useState(false)
-  const [expandedFaq, setExpandedFaq] = useState<string | null>(null)
+  const [settings, setSettings] = useState({
+    apiKeys: [] as any[],
+    webhookUrl: '',
+    stripeConnected: false,
+  })
+  const [showNewKeyForm, setShowNewKeyForm] = useState(false)
+  const [newKeyName, setNewKeyName] = useState('')
+  const [generatedKey, setGeneratedKey] = useState('')
+  const [showKey, setShowKey] = useState<{ [key: string]: boolean }>({})
+  const [copiedCode, setCopiedCode] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState('api-keys')
+  const [expandedSection, setExpandedSection] = useState<string | null>(null)
 
   useEffect(() => {
-    loadSettings()
-  }, [])
-
-  const loadSettings = async () => {
-    try {
+    const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         router.push('/login')
-        return
+      } else {
+        setUser(user)
+        loadSettings()
       }
-      setUser(user)
+    }
 
+    checkAuth()
+  }, [router])
+
+  const loadSettings = async () => {
+    if (!user) return
+
+    setLoading(true)
+    try {
       // Load API keys
-      const { data: keys } = await supabase
+      const { data: apiKeys } = await supabase
         .from('api_keys')
         .select('*')
         .eq('user_id', user.id)
         .eq('active', true)
         .order('created_at', { ascending: false })
 
-      setApiKeys(keys || [])
+      // Load webhook URL
+      const { data: webhook } = await supabase
+        .from('webhook_configs')
+        .select('webhook_url')
+        .eq('user_id', user.id)
+        .single()
+
+      // Check Stripe connection
+      const { data: stripeAccount } = await supabase
+        .from('stripe_accounts')
+        .select('stripe_account_id')
+        .eq('user_id', user.id)
+        .single()
+
+      setSettings({
+        apiKeys: apiKeys || [],
+        webhookUrl: (webhook as any)?.webhook_url || '',
+        stripeConnected: !!(stripeAccount as any)?.stripe_account_id,
+      })
     } catch (error) {
       console.error('Error loading settings:', error)
-    } finally {
-      setLoading(false)
     }
+    setLoading(false)
   }
 
   const handleCreateApiKey = async () => {
     if (!newKeyName.trim()) return
 
-    setCreatingKey(true)
+    const rawKey = generateApiKey()
+    const hashedKey = hashApiKey(rawKey)
+    const prefix = getApiKeyPrefix(rawKey)
+
     try {
-      const apiKey = generateApiKey()
-      const keyHash = hashApiKey(apiKey)
-      const keyPrefix = getApiKeyPrefix(apiKey)
+      const { error } = await (supabase as any)
+        .from('api_keys')
+        .insert({
+          user_id: user.id,
+          key_hash: hashedKey,
+          key_prefix: prefix,
+          name: newKeyName,
+          active: true,
+        })
 
-      const { error } = await supabase.from('api_keys').insert({
-        user_id: user.id,
-        key_hash: keyHash,
-        key_prefix: keyPrefix,
-        name: newKeyName,
-        active: true,
-      } as any)
+      if (error) throw error
 
-      if (!error) {
-        setNewKey(apiKey)
-        setNewKeyName('')
-        loadSettings()
-      }
+      setGeneratedKey(rawKey)
+      setShowNewKeyForm(false)
+      setNewKeyName('')
+      loadSettings()
     } catch (error) {
       console.error('Error creating API key:', error)
-    } finally {
-      setCreatingKey(false)
     }
   }
 
@@ -91,10 +114,15 @@ export default function SettingsPage() {
     if (!confirm('Are you sure you want to delete this API key?')) return
 
     try {
-      await supabase
+      const { error } = await (supabase as any)
         .from('api_keys')
-        .update({ active: false, revoked_at: new Date().toISOString() } as any)
+        .update({
+          active: false,
+          revoked_at: new Date().toISOString()
+        })
         .eq('id', keyId)
+
+      if (error) throw error
 
       loadSettings()
     } catch (error) {
@@ -107,549 +135,465 @@ export default function SettingsPage() {
     if (id) {
       setCopiedCode(id)
       setTimeout(() => setCopiedCode(null), 2000)
-    } else {
-      setCopiedKey(true)
-      setTimeout(() => setCopiedKey(false), 2000)
     }
+  }
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.push('/')
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
-        <Stack align="center" gap="small">
-          <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
-          <Text muted>Loading...</Text>
-        </Stack>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
-      <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+      <nav className="border-b bg-white/70 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-8">
-              <Logo size="md" />
-              <div className="hidden md:flex gap-6">
-                <Link href="/dashboard" className="text-gray-700 hover:text-indigo-600 transition-colors">
-                  Dashboard
-                </Link>
-                <Link href="/payment-links" className="text-gray-700 hover:text-indigo-600 transition-colors">
-                  Payment Links
-                </Link>
-                <Link href="/analytics" className="text-gray-700 hover:text-indigo-600 transition-colors">
-                  Analytics
-                </Link>
-                <Link href="/settings" className="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors">
-                  Settings
-                </Link>
-              </div>
+            <div className="flex items-center gap-4">
+              <Link href="/">
+                <Logo size="md" />
+              </Link>
             </div>
             <div className="flex items-center gap-4">
-              <Button
-                href="/dashboard"
-                variant="outline"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                iconPosition="left"
-              >
-                Back to Dashboard
+              <Link href="/dashboard">
+                <Button variant="outline">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+              <Button onClick={handleSignOut} variant="outline">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
               </Button>
             </div>
           </div>
         </div>
       </nav>
 
-      <main>
-        <Section spacing="large" width="narrow">
-          <header className="mb-10">
-            <Stack gap="small">
-              <Eyebrow icon={<Shield className="w-4 h-4" />}>
-                Developer Tools
-              </Eyebrow>
-              <Heading as="h1" gradient>Settings</Heading>
-              <Text muted size="large">Manage your API keys and integration settings</Text>
-            </Stack>
-          </header>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Account Settings</h1>
+          <p className="text-gray-600">Manage your API keys, webhooks, and account preferences</p>
+        </div>
 
-          {/* Key Takeaways */}
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 mb-8 border border-indigo-200">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-              <Sparkles className="w-4 h-4 mr-2 text-indigo-600" />
-              Key Takeaways
-            </h3>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-start">
-                <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">API keys are required for Clients.AI integration</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">Each key can be named and tracked independently</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">Webhooks enable real-time payment notifications</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">All API calls must include the Bearer token</span>
-              </li>
-            </ul>
+        {/* Mini Tabs (CSS-only) */}
+        <div className="bg-white rounded-xl shadow-lg mb-8">
+          <div className="flex border-b">
+            <button
+              onClick={() => setActiveTab('api-keys')}
+              className={`px-6 py-4 font-medium transition-colors ${
+                activeTab === 'api-keys'
+                  ? 'text-indigo-600 border-b-2 border-indigo-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              API Keys
+            </button>
+            <button
+              onClick={() => setActiveTab('webhooks')}
+              className={`px-6 py-4 font-medium transition-colors ${
+                activeTab === 'webhooks'
+                  ? 'text-indigo-600 border-b-2 border-indigo-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Webhooks
+            </button>
+            <button
+              onClick={() => setActiveTab('integration')}
+              className={`px-6 py-4 font-medium transition-colors ${
+                activeTab === 'integration'
+                  ? 'text-indigo-600 border-b-2 border-indigo-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Integration Guide
+            </button>
           </div>
 
-          {/* Mini Tabs (CSS-only) */}
-          <div className="mb-8">
-            <div className="flex gap-2 p-1 bg-white rounded-lg shadow-md">
-              <input type="radio" id="tab-api" name="settings-tabs" className="hidden" checked={activeTab === 'api'} onChange={() => setActiveTab('api')} />
-              <label htmlFor="tab-api" className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer transition-all ${activeTab === 'api' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium' : 'text-gray-600 hover:text-gray-900'}`}>
-                API Keys
-              </label>
-
-              <input type="radio" id="tab-webhooks" name="settings-tabs" className="hidden" checked={activeTab === 'webhooks'} onChange={() => setActiveTab('webhooks')} />
-              <label htmlFor="tab-webhooks" className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer transition-all ${activeTab === 'webhooks' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium' : 'text-gray-600 hover:text-gray-900'}`}>
-                Webhooks
-              </label>
-
-              <input type="radio" id="tab-security" name="settings-tabs" className="hidden" checked={activeTab === 'security'} onChange={() => setActiveTab('security')} />
-              <label htmlFor="tab-security" className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer transition-all ${activeTab === 'security' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium' : 'text-gray-600 hover:text-gray-900'}`}>
-                Security
-              </label>
-            </div>
-          </div>
-
-          {activeTab === 'api' && (
-            <>
-              <Card className="mb-10 overflow-hidden">
-                <div className="p-6 bg-gradient-to-br from-indigo-50/50 to-purple-50/50">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg">
-                      <Key className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <Heading as="h2" size="h3">API Keys</Heading>
-                      <Text muted>Manage API keys for Clients.AI integration</Text>
-                    </div>
+          <div className="p-8">
+            {/* API Keys Tab */}
+            {activeTab === 'api-keys' && (
+              <div>
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">API Keys</h2>
+                    <p className="text-gray-600">Manage your API keys for Clients.AI integration</p>
                   </div>
+                  <Button
+                    onClick={() => setShowNewKeyForm(true)}
+                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create New Key
+                  </Button>
                 </div>
-                <Divider />
-                <div className="p-6">
-                  {newKey && (
-                    <Callout variant="success" title="API Key Created Successfully" icon={<Sparkles className="h-4 w-4" />} className="mb-6">
-                      <Stack gap="small">
-                        <Text size="small">Save this key now. You won't be able to see it again!</Text>
-                        <div className="flex items-center gap-2">
-                          <Input
-                            value={newKey}
-                            readOnly
-                            className="font-mono text-sm bg-white"
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => copyToClipboard(newKey)}
-                          >
-                            {copiedKey ? (
-                              <Check className="h-4 w-4 text-green-600" />
-                            ) : (
-                              <Copy className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setNewKey(null)}
-                          >
-                            Close
-                          </Button>
-                        </div>
-                      </Stack>
-                    </Callout>
-                  )}
 
-                  {/* Callout—Muted */}
-                  <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-gray-300 mb-6">
+                {/* Callout—Muted */}
+                {generatedKey && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                     <div className="flex items-start">
-                      <AlertCircle className="h-5 w-5 text-gray-500 mt-0.5 mr-3 flex-shrink-0" />
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900 mb-1">Important Note</h4>
-                        <p className="text-sm text-gray-600">
-                          API keys provide full access to your Enclose.AI account. Keep them secure and never expose them in client-side code or public repositories.
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 mr-3" />
+                      <div className="flex-1">
+                        <p className="text-green-900 font-medium mb-2">
+                          New API key created successfully!
+                        </p>
+                        <div className="bg-white rounded border border-green-200 p-3 font-mono text-sm break-all">
+                          {generatedKey}
+                        </div>
+                        <p className="text-green-700 text-sm mt-2">
+                          Save this key securely. It won't be shown again.
                         </p>
                       </div>
                     </div>
                   </div>
+                )}
 
-                  <div className="flex gap-3 mb-6">
-                    <Input
-                      placeholder="API Key Name (e.g., Production)"
-                      value={newKeyName}
-                      onChange={(e) => setNewKeyName(e.target.value)}
-                      className="flex-1"
-                    />
+                {showNewKeyForm && (
+                  <Card className="mb-6 border-indigo-200">
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Create New API Key</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Key Name
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g., Production Key"
+                            value={newKeyName}
+                            onChange={(e) => setNewKeyName(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          />
+                          <p className="text-sm text-gray-500 mt-1">
+                            Give your key a descriptive name to identify it later
+                          </p>
+                        </div>
+                        <div className="flex gap-3">
+                          <Button
+                            onClick={handleCreateApiKey}
+                            disabled={!newKeyName.trim()}
+                          >
+                            Generate Key
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setShowNewKeyForm(false)
+                              setNewKeyName('')
+                            }}
+                            variant="outline"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
+                <div className="space-y-4">
+                  {settings.apiKeys.map((apiKey) => (
+                    <Card key={apiKey.id} className="hover:shadow-lg transition-shadow">
+                      <div className="p-6">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <Key className="h-5 w-5 text-indigo-600" />
+                              <h3 className="font-semibold text-gray-900">{apiKey.name}</h3>
+                            </div>
+                            <p className="text-sm text-gray-600 font-mono mb-2">
+                              {apiKey.key_prefix}...{showKey[apiKey.id] ? apiKey.key_hash.slice(-8) : '••••••••'}
+                            </p>
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <span>Created {formatDateTime(apiKey.created_at)}</span>
+                              {apiKey.last_used_at && (
+                                <span>Last used {formatDateTime(apiKey.last_used_at)}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => setShowKey({ ...showKey, [apiKey.id]: !showKey[apiKey.id] })}
+                              variant="outline"
+                              size="sm"
+                            >
+                              {showKey[apiKey.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                            <Button
+                              onClick={() => handleDeleteApiKey(apiKey.id)}
+                              variant="outline"
+                              size="sm"
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+
+                  {settings.apiKeys.length === 0 && !showNewKeyForm && (
+                    <div className="text-center py-12 bg-gray-50 rounded-lg">
+                      <Key className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600 mb-4">No API keys yet</p>
+                      <Button
+                        onClick={() => setShowNewKeyForm(true)}
+                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                      >
+                        Create Your First Key
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Webhooks Tab */}
+            {activeTab === 'webhooks' && (
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Webhook Configuration</h2>
+
+                {/* Code Snippet Box */}
+                <div className="bg-gray-900 rounded-lg p-6 mb-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center gap-2">
+                      <Terminal className="h-5 w-5 text-gray-400" />
+                      <span className="text-gray-400 text-sm">Webhook Endpoint</span>
+                    </div>
                     <Button
-                      onClick={handleCreateApiKey}
-                      disabled={creatingKey || !newKeyName.trim()}
-                      variant="primary"
-                      gradient
-                      icon={<Plus className="h-4 w-4" />}
-                      iconPosition="left"
+                      onClick={() => copyToClipboard(`https://api.enclose.ai/webhooks/${user?.id}`, 'webhook')}
+                      variant="outline"
+                      size="sm"
+                      className="text-gray-400 hover:text-white"
                     >
-                      {creatingKey ? 'Creating...' : 'Create Key'}
+                      {copiedCode === 'webhook' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </div>
-
-                  {apiKeys.length === 0 ? (
-                    <Callout variant="info">
-                      No API keys created yet
-                    </Callout>
-                  ) : (
-                    <Stack gap="small">
-                      {apiKeys.map((key) => (
-                        <div
-                          key={key.id}
-                          className="flex items-center justify-between p-4 bg-gradient-to-r from-white to-indigo-50/30 rounded-lg border border-gray-200 hover:border-indigo-300 transition-all"
-                        >
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3">
-                              <Key className="h-4 w-4 text-indigo-600" />
-                              <Text className="font-semibold">{key.name}</Text>
-                              <Badge variant="default" size="sm">
-                                {key.key_prefix}...
-                              </Badge>
-                            </div>
-                            <Text size="small" muted className="mt-1">
-                              Created {formatDateTime(key.created_at)}
-                              {key.last_used && ` • Last used ${formatDateTime(key.last_used)}`}
-                            </Text>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteApiKey(key.id)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </Stack>
-                  )}
+                  <code className="text-green-400 font-mono">
+                    https://api.enclose.ai/webhooks/{user?.id}
+                  </code>
                 </div>
-              </Card>
 
-              {/* Code Snippet Box */}
-              <Card className="mb-8">
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Start Example</h3>
-                  <div className="bg-gray-900 rounded-lg p-4 relative">
-                    <button
-                      onClick={() => copyToClipboard(`const response = await fetch('${process.env.NEXT_PUBLIC_APP_URL}/api/v1/checkout', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    agent_id: 'agent_123',
-    customer_email: 'customer@example.com',
-    product_name: 'Premium Package',
-    amount: 99.99,
-    currency: 'usd'
-  })
-});
-
-const data = await response.json();
-console.log(data.checkout_url);`, 'quickstart')}
-                      className="absolute top-2 right-2 p-2 bg-gray-800 hover:bg-gray-700 rounded transition-colors"
-                    >
-                      {copiedCode === 'quickstart' ? (
-                        <Check className="h-4 w-4 text-green-400" />
-                      ) : (
-                        <Copy className="h-4 w-4 text-gray-400" />
-                      )}
-                    </button>
-                    <pre className="text-sm font-mono text-gray-300 overflow-x-auto">
-                      <code className="language-javascript">{`const response = await fetch('${process.env.NEXT_PUBLIC_APP_URL}/api/v1/checkout', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    agent_id: 'agent_123',
-    customer_email: 'customer@example.com',
-    product_name: 'Premium Package',
-    amount: 99.99,
-    currency: 'usd'
-  })
-});
-
-const data = await response.json();
-console.log(data.checkout_url);`}</code>
-                    </pre>
+                {/* Pros/Cons Table */}
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                  <div className="bg-green-50 rounded-lg p-6">
+                    <h3 className="font-semibold text-green-900 mb-4 flex items-center">
+                      <CheckCircle className="h-5 w-5 mr-2" />
+                      Benefits of Webhooks
+                    </h3>
+                    <ul className="space-y-2 text-sm text-green-700">
+                      <li>• Real-time payment notifications</li>
+                      <li>• Automatic retry with exponential backoff</li>
+                      <li>• Signed payloads for security</li>
+                      <li>• Detailed event logs in dashboard</li>
+                      <li>• Support for multiple event types</li>
+                    </ul>
+                  </div>
+                  <div className="bg-amber-50 rounded-lg p-6">
+                    <h3 className="font-semibold text-amber-900 mb-4 flex items-center">
+                      <AlertCircle className="h-5 w-5 mr-2" />
+                      Important Considerations
+                    </h3>
+                    <ul className="space-y-2 text-sm text-amber-700">
+                      <li>• Endpoint must be HTTPS</li>
+                      <li>• Must respond within 20 seconds</li>
+                      <li>• Should verify webhook signatures</li>
+                      <li>• Implement idempotency checks</li>
+                      <li>• Handle duplicate events gracefully</li>
+                    </ul>
                   </div>
                 </div>
-              </Card>
-            </>
-          )}
 
-          {activeTab === 'webhooks' && (
-            <>
-              {/* Pros/Cons Table */}
-              <Card className="mb-8">
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-6">Webhook Configuration Options</h3>
-                  <div className="grid grid-cols-2 gap-8">
-                    <div>
-                      <h4 className="font-medium text-green-700 mb-3 flex items-center">
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Advantages
-                      </h4>
-                      <ul className="space-y-2">
-                        <li className="text-sm text-gray-700">• Real-time payment notifications</li>
-                        <li className="text-sm text-gray-700">• Automatic retry on failure</li>
-                        <li className="text-sm text-gray-700">• Event filtering by type</li>
-                        <li className="text-sm text-gray-700">• Secure signature verification</li>
-                        <li className="text-sm text-gray-700">• Detailed event logs</li>
+                {/* FAQ Strip */}
+                <div className="space-y-4">
+                  <details className="group">
+                    <summary className="flex items-center justify-between cursor-pointer p-4 bg-gray-50 rounded-lg hover:bg-gray-100">
+                      <span className="font-medium text-gray-900">How do I verify webhook signatures?</span>
+                      <ChevronDown className="h-5 w-5 text-gray-500 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="p-4 bg-white border-l-4 border-indigo-500">
+                      <p className="text-gray-600 mb-3">
+                        Every webhook request includes an X-Webhook-Signature header. Verify it using:
+                      </p>
+                      <pre className="bg-gray-900 text-gray-300 p-3 rounded text-sm overflow-x-auto">
+{`const crypto = require('crypto');
+const signature = crypto
+  .createHmac('sha256', process.env.WEBHOOK_SECRET)
+  .update(JSON.stringify(payload))
+  .digest('hex');
+
+if (signature === headers['x-webhook-signature']) {
+  // Webhook is valid
+}`}
+                      </pre>
+                    </div>
+                  </details>
+
+                  <details className="group">
+                    <summary className="flex items-center justify-between cursor-pointer p-4 bg-gray-50 rounded-lg hover:bg-gray-100">
+                      <span className="font-medium text-gray-900">What events are supported?</span>
+                      <ChevronDown className="h-5 w-5 text-gray-500 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="p-4 bg-white border-l-4 border-indigo-500">
+                      <ul className="space-y-2 text-gray-600">
+                        <li><code className="bg-gray-100 px-2 py-1 rounded text-sm">payment.completed</code> - Payment successfully processed</li>
+                        <li><code className="bg-gray-100 px-2 py-1 rounded text-sm">payment.failed</code> - Payment attempt failed</li>
+                        <li><code className="bg-gray-100 px-2 py-1 rounded text-sm">refund.created</code> - Refund issued</li>
+                        <li><code className="bg-gray-100 px-2 py-1 rounded text-sm">subscription.created</code> - New subscription started</li>
+                        <li><code className="bg-gray-100 px-2 py-1 rounded text-sm">subscription.cancelled</code> - Subscription cancelled</li>
                       </ul>
                     </div>
+                  </details>
+                </div>
+              </div>
+            )}
+
+            {/* Integration Guide Tab */}
+            {activeTab === 'integration' && (
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Integration Guide</h2>
+
+                {/* Key Takeaways */}
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-6 mb-8">
+                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+                    <Sparkles className="h-5 w-5 mr-2 text-indigo-600" />
+                    Key Integration Points
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start">
+                      <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700">API keys are required for Clients.AI integration</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700">Each key can be named and tracked independently</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700">Webhooks enable real-time payment notifications</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700">All API calls must include the Bearer token</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Expandable Excerpt */}
+                <div className="space-y-4">
+                  <div className="border border-gray-200 rounded-lg">
+                    <button
+                      onClick={() => setExpandedSection(expandedSection === 'quickstart' ? null : 'quickstart')}
+                      className="w-full flex items-center justify-between p-4 hover:bg-gray-50"
+                    >
+                      <span className="font-medium text-gray-900">Quick Start Example</span>
+                      {expandedSection === 'quickstart' ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                    </button>
+                    {expandedSection === 'quickstart' && (
+                      <div className="p-4 border-t">
+                        <pre className="bg-gray-900 text-gray-300 p-4 rounded-lg overflow-x-auto text-sm">
+{`// 1. Initialize with your API key
+const encloseAI = new EncloseAI({
+  apiKey: 'your-api-key-here'
+});
+
+// 2. Create a checkout session
+const session = await encloseAI.createCheckout({
+  amount: 9999, // $99.99 in cents
+  currency: 'usd',
+  product_name: 'Premium Plan',
+  customer_email: 'customer@example.com'
+});
+
+// 3. Redirect to checkout
+window.location.href = session.checkout_url;`}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="border border-gray-200 rounded-lg">
+                    <button
+                      onClick={() => setExpandedSection(expandedSection === 'testing' ? null : 'testing')}
+                      className="w-full flex items-center justify-between p-4 hover:bg-gray-50"
+                    >
+                      <span className="font-medium text-gray-900">Testing Your Integration</span>
+                      {expandedSection === 'testing' ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                    </button>
+                    {expandedSection === 'testing' && (
+                      <div className="p-4 border-t text-gray-600">
+                        <p className="mb-3">Use these test credentials for development:</p>
+                        <ul className="space-y-2 text-sm">
+                          <li>• Test Card: <code className="bg-gray-100 px-2 py-1 rounded">4242 4242 4242 4242</code></li>
+                          <li>• Any future expiry date</li>
+                          <li>• Any 3-digit CVC</li>
+                          <li>• Any billing ZIP code</li>
+                        </ul>
+                        <p className="mt-3 text-sm">
+                          Test mode transactions appear in your dashboard with a "TEST" badge.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Legal Clause List */}
+                <div className="mt-8 p-6 bg-gray-50 rounded-lg">
+                  <h3 className="font-semibold text-gray-900 mb-4">Important Terms</h3>
+                  <dl className="space-y-3 text-sm">
                     <div>
-                      <h4 className="font-medium text-amber-700 mb-3 flex items-center">
-                        <AlertCircle className="w-4 h-4 mr-2" />
-                        Considerations
-                      </h4>
-                      <ul className="space-y-2">
-                        <li className="text-sm text-gray-700">• Requires public endpoint</li>
-                        <li className="text-sm text-gray-700">• Must handle duplicates</li>
-                        <li className="text-sm text-gray-700">• Needs signature validation</li>
-                        <li className="text-sm text-gray-700">• May arrive out of order</li>
-                        <li className="text-sm text-gray-700">• Rate limits apply</li>
-                      </ul>
+                      <dt className="font-medium text-gray-900">API Rate Limits</dt>
+                      <dd className="text-gray-600 mt-1">1000 requests per minute for standard endpoints, 100 for checkout creation</dd>
                     </div>
-                  </div>
-                </div>
-              </Card>
-
-              {/* FAQ Strip */}
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-                <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-b">
-                  <h3 className="font-semibold text-gray-900">Webhook FAQs</h3>
-                </div>
-                <div className="divide-y divide-gray-200">
-                  <div className="p-4">
-                    <button
-                      onClick={() => setExpandedFaq(expandedFaq === 'retry' ? null : 'retry')}
-                      className="w-full text-left flex items-center justify-between text-gray-900 hover:text-indigo-600 transition-colors"
-                    >
-                      <span className="font-medium">Q: How many times will failed webhooks retry?</span>
-                      {expandedFaq === 'retry' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </button>
-                    {expandedFaq === 'retry' && (
-                      <p className="mt-2 text-sm text-gray-600">A: Failed webhooks will retry up to 3 times with exponential backoff (1 minute, 5 minutes, 30 minutes).</p>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <button
-                      onClick={() => setExpandedFaq(expandedFaq === 'events' ? null : 'events')}
-                      className="w-full text-left flex items-center justify-between text-gray-900 hover:text-indigo-600 transition-colors"
-                    >
-                      <span className="font-medium">Q: Which events trigger webhooks?</span>
-                      {expandedFaq === 'events' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </button>
-                    {expandedFaq === 'events' && (
-                      <p className="mt-2 text-sm text-gray-600">A: Webhooks fire for payment.succeeded, payment.failed, refund.created, and dispute.created events.</p>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <button
-                      onClick={() => setExpandedFaq(expandedFaq === 'verify' ? null : 'verify')}
-                      className="w-full text-left flex items-center justify-between text-gray-900 hover:text-indigo-600 transition-colors"
-                    >
-                      <span className="font-medium">Q: How do I verify webhook signatures?</span>
-                      {expandedFaq === 'verify' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </button>
-                    {expandedFaq === 'verify' && (
-                      <p className="mt-2 text-sm text-gray-600">A: Each webhook includes an X-Enclose-Signature header. Verify it using HMAC-SHA256 with your webhook secret.</p>
-                    )}
-                  </div>
+                    <div>
+                      <dt className="font-medium text-gray-900">Data Retention</dt>
+                      <dd className="text-gray-600 mt-1">Transaction data retained for 7 years for compliance</dd>
+                    </div>
+                    <div>
+                      <dt className="font-medium text-gray-900">Security Requirements</dt>
+                      <dd className="text-gray-600 mt-1">HTTPS required for all API calls and webhook endpoints</dd>
+                    </div>
+                  </dl>
                 </div>
               </div>
-            </>
-          )}
+            )}
+          </div>
+        </div>
 
-          {activeTab === 'security' && (
-            <>
-              {/* Legal Clause List */}
-              <Card className="mb-8">
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-6">Security Requirements</h3>
-                  <ol className="space-y-4">
-                    <li className="flex">
-                      <span className="font-bold text-indigo-600 mr-4 mt-0.5">1.</span>
-                      <div>
-                        <strong className="text-gray-900">API Key Storage</strong>
-                        <p className="text-sm text-gray-600 mt-1">
-                          API keys must be stored securely using environment variables or secure key management systems.
-                          Never commit API keys to version control or expose them in client-side code.
-                        </p>
-                      </div>
-                    </li>
-                    <li className="flex">
-                      <span className="font-bold text-indigo-600 mr-4 mt-0.5">2.</span>
-                      <div>
-                        <strong className="text-gray-900">HTTPS Requirement</strong>
-                        <p className="text-sm text-gray-600 mt-1">
-                          All API requests must be made over HTTPS. Requests over HTTP will be rejected
-                          with a 403 Forbidden error to ensure data security in transit.
-                        </p>
-                      </div>
-                    </li>
-                    <li className="flex">
-                      <span className="font-bold text-indigo-600 mr-4 mt-0.5">3.</span>
-                      <div>
-                        <strong className="text-gray-900">Rate Limiting</strong>
-                        <p className="text-sm text-gray-600 mt-1">
-                          API requests are limited to 100 requests per minute per API key. Exceeding this
-                          limit will result in a 429 Too Many Requests response.
-                        </p>
-                      </div>
-                    </li>
-                    <li className="flex">
-                      <span className="font-bold text-indigo-600 mr-4 mt-0.5">4.</span>
-                      <div>
-                        <strong className="text-gray-900">IP Allowlisting</strong>
-                        <p className="text-sm text-gray-600 mt-1">
-                          For enhanced security, you may configure IP allowlisting for your API keys.
-                          Only requests from allowed IP addresses will be accepted.
-                        </p>
-                      </div>
-                    </li>
-                    <li className="flex">
-                      <span className="font-bold text-indigo-600 mr-4 mt-0.5">5.</span>
-                      <div>
-                        <strong className="text-gray-900">Audit Logging</strong>
-                        <p className="text-sm text-gray-600 mt-1">
-                          All API requests are logged for security and compliance purposes. Logs include
-                          timestamp, endpoint, response code, and requesting IP address.
-                        </p>
-                      </div>
-                    </li>
-                  </ol>
+        {/* Stripe Connection Status */}
+        <Card className="bg-white shadow-lg">
+          <div className="p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Stripe Connection</h2>
+            {settings.stripeConnected ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-green-700 font-medium">Connected to Stripe</span>
                 </div>
-              </Card>
-
-              {/* Expandable Excerpt */}
-              <Card className="mb-8">
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Security Best Practices</h3>
-                  <div className="text-gray-600 text-sm">
-                    <p className={`${!expandedExcerpt ? 'line-clamp-3' : ''}`}>
-                      When integrating Enclose.AI with your Clients.AI agents, security should be your top priority.
-                      Start by implementing proper authentication using Bearer tokens in the Authorization header.
-                      Never expose API keys in frontend code or public repositories. Use environment variables to store
-                      sensitive credentials and rotate keys regularly. Implement webhook signature verification to ensure
-                      requests are genuinely from Enclose.AI. Monitor your API usage for unusual patterns that might
-                      indicate compromised credentials. Enable IP allowlisting when possible to restrict access to known
-                      servers. Use separate API keys for development, staging, and production environments. Implement
-                      proper error handling that doesn't expose sensitive information in error messages. Keep audit logs
-                      of all payment-related activities for compliance and debugging purposes.
-                    </p>
-                    <button
-                      onClick={() => setExpandedExcerpt(!expandedExcerpt)}
-                      className="mt-2 text-indigo-600 hover:text-indigo-700 font-medium text-sm flex items-center gap-1"
-                    >
-                      {expandedExcerpt ? (
-                        <>Show less <ChevronUp className="w-4 h-4" /></>
-                      ) : (
-                        <>Read more <ChevronDown className="w-4 h-4" /></>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </Card>
-            </>
-          )}
-
-          <Card className="overflow-hidden">
-            <div className="p-6 bg-gradient-to-br from-cyan-50/50 to-blue-50/50">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-lg">
-                  <Code className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <Heading as="h2" size="h3">API Reference</Heading>
-                  <Text muted>Complete documentation for all endpoints</Text>
-                </div>
+                <Button variant="outline">
+                  Manage in Stripe Dashboard
+                </Button>
               </div>
-            </div>
-            <Divider />
-            <div className="p-6">
-              <Stack gap="large">
-                <section>
-                  <Stack gap="small">
-                    <div className="flex items-center gap-2">
-                      <Terminal className="h-4 w-4 text-indigo-600" />
-                      <Heading as="h3" size="h4">Base URL</Heading>
-                    </div>
-                    <Input
-                      value={`${process.env.NEXT_PUBLIC_APP_URL}/api/v1`}
-                      readOnly
-                      className="font-mono text-sm bg-gray-50"
-                    />
-                  </Stack>
-                </section>
-
-                <section>
-                  <Stack gap="small">
-                    <div className="flex items-center gap-2">
-                      <Key className="h-4 w-4 text-indigo-600" />
-                      <Heading as="h3" size="h4">Authentication</Heading>
-                    </div>
-                    <Text muted size="small">
-                      Include your API key in the Authorization header:
-                    </Text>
-                    <pre className="p-4 bg-gradient-to-br from-gray-900 to-indigo-900 text-green-400 rounded-lg text-sm font-mono overflow-x-auto">
-                      {`Authorization: Bearer encl_your_api_key_here`}
-                    </pre>
-                  </Stack>
-                </section>
-
-                <section>
-                  <Stack gap="small">
-                    <div className="flex items-center gap-2">
-                      <FileCode className="h-4 w-4 text-indigo-600" />
-                      <Heading as="h3" size="h4">Endpoints</Heading>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge variant="primary" size="sm">POST /checkout</Badge>
-                          <span className="text-xs text-gray-500">Create payment link</span>
-                        </div>
-                        <p className="text-sm text-gray-600">Generate a Stripe checkout session for payment collection</p>
-                      </div>
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge variant="success" size="sm">GET /payments</Badge>
-                          <span className="text-xs text-gray-500">List payments</span>
-                        </div>
-                        <p className="text-sm text-gray-600">Retrieve all payments for your account with pagination</p>
-                      </div>
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge variant="warning" size="sm">POST /webhooks</Badge>
-                          <span className="text-xs text-gray-500">Configure webhooks</span>
-                        </div>
-                        <p className="text-sm text-gray-600">Set up webhook endpoints for payment events</p>
-                      </div>
-                    </div>
-                  </Stack>
-                </section>
-              </Stack>
-            </div>
-          </Card>
-        </Section>
+            ) : (
+              <div className="text-center py-8">
+                <Shield className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-4">Connect your Stripe account to start processing payments</p>
+                <Link href="/api/stripe/oauth/connect">
+                  <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
+                    Connect Stripe Account
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        </Card>
       </main>
     </div>
   )

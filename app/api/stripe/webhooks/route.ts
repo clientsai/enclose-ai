@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Store webhook event in database for debugging
-    await supabaseAdmin.from('webhook_events').insert({
+    await (supabaseAdmin as any).from('webhook_events').insert({
       stripe_event_id: event.id,
       event_type: event.type,
       payload: event as any,
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
         if (paymentLinkId) {
           // Update payment record
-          await supabaseAdmin.from('payments').insert({
+          await (supabaseAdmin as any).from('payments').insert({
             payment_link_id: paymentLinkId,
             stripe_checkout_session_id: session.id,
             stripe_payment_intent_id: session.payment_intent,
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
           })
 
           // Increment conversion count
-          await supabaseAdmin.rpc('increment_link_conversion_count', {
+          await (supabaseAdmin as any).rpc('increment_link_conversion_count', {
             link_id: paymentLinkId,
           })
 
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
         const paymentIntent = event.data.object as any
 
         // Update payment status if it exists
-        await supabaseAdmin
+        await (supabaseAdmin as any)
           .from('payments')
           .update({
             status: 'succeeded',
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
       case 'payment_intent.payment_failed': {
         const paymentIntent = event.data.object as any
 
-        await supabaseAdmin
+        await (supabaseAdmin as any)
           .from('payments')
           .update({
             status: 'failed',
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
         const account = event.data.object as any
 
         // Update account details in database
-        await supabaseAdmin
+        await (supabaseAdmin as any)
           .from('stripe_accounts')
           .update({
             account_details: {
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
         const account = event.account as string
 
         // Mark account as disconnected
-        await supabaseAdmin
+        await (supabaseAdmin as any)
           .from('stripe_accounts')
           .update({
             access_token: null,
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Mark webhook as processed
-    await supabaseAdmin
+    await (supabaseAdmin as any)
       .from('webhook_events')
       .update({
         processed: true,

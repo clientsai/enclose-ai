@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     // Create payment link with Stripe
     const paymentLink = await createConnectedAccountPaymentLink(
-      stripeAccount.stripe_account_id,
+      (stripeAccount as any).stripe_account_id,
       productName,
       amount,
       currency,
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     )
 
     // Store payment link in database
-    const { data: savedLink, error: saveError } = await supabaseAdmin
+    const { data: savedLink, error: saveError } = await (supabaseAdmin as any)
       .from('payment_links')
       .insert({
         user_id: userId,

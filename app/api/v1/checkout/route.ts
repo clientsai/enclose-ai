@@ -33,12 +33,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Update last used timestamp
-    await supabaseAdmin
+    await (supabaseAdmin as any)
       .from('api_keys')
       .update({ last_used: new Date().toISOString() })
-      .eq('id', apiKeyData.id)
+      .eq('id', (apiKeyData as any).id)
 
-    const userId = apiKeyData.user_id
+    const userId = (apiKeyData as any).user_id
     const {
       agent_id,
       customer_email,
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     // Create payment link with Clients.AI metadata
     const paymentLink = await createConnectedAccountPaymentLink(
-      stripeAccount.stripe_account_id,
+      (stripeAccount as any).stripe_account_id,
       product_name,
       amount,
       currency,
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     )
 
     // Store payment link in database
-    const { data: savedLink, error: saveError } = await supabaseAdmin
+    const { data: savedLink, error: saveError } = await (supabaseAdmin as any)
       .from('payment_links')
       .insert({
         user_id: userId,
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
           agent_id: agent_id,
           customer_email: customer_email,
           source: 'clients_ai',
-          api_key_id: apiKeyData.id,
+          api_key_id: (apiKeyData as any).id,
           ...metadata,
         },
       })
@@ -116,13 +116,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Track analytics event
-    await supabaseAdmin.from('analytics_events').insert({
+    await (supabaseAdmin as any).from('analytics_events').insert({
       user_id: userId,
       event_type: 'api_checkout_created',
       payment_link_id: savedLink.id,
       metadata: {
         agent_id: agent_id,
-        api_key_id: apiKeyData.id,
+        api_key_id: (apiKeyData as any).id,
       },
     })
 

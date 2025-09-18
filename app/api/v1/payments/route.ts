@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const userId = apiKeyData.user_id
+    const userId = (apiKeyData as any).user_id
     const { searchParams } = new URL(request.url)
     const paymentLinkId = searchParams.get('payment_link_id')
     const agentId = searchParams.get('agent_id')
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
         payment_links!inner(*)
       `)
       .eq('id', payment_id)
-      .eq('payment_links.user_id', apiKeyData.user_id)
+      .eq('payment_links.user_id', (apiKeyData as any).user_id)
       .single()
 
     if (error || !payment) {

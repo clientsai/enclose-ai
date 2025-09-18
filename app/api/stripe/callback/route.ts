@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       : null
 
     // Store in database
-    const { data, error: dbError } = await supabaseAdmin
+    const { data, error: dbError } = await (supabaseAdmin as any)
       .from('stripe_accounts')
       .upsert({
         user_id: userId,
