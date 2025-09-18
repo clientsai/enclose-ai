@@ -69,11 +69,12 @@ export default function RegisterPage() {
         throw new Error('Supabase client not initialized')
       }
 
-      // Create auth user
+      // Create auth user with proper redirect URL
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo: 'https://enclose-ai.vercel.app/login',
           data: {
             full_name: formData.fullName,
           },

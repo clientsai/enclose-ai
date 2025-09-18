@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Mail, Lock, CheckCircle, Shield, Zap, Globe } from 'lucide-react'
+import { ArrowRight, Mail, Lock, CheckCircle, Shield, Zap, Globe, AlertCircle, Info } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import Logo from '@/components/Logo'
 
@@ -64,7 +64,14 @@ export default function LoginPage() {
 
       router.push('/dashboard')
     } catch (error: any) {
-      setError(error.message || 'Failed to sign in')
+      // Modernize error messages - Jony Ive style: clean, human, minimal
+      if (error.message?.includes('Email not confirmed')) {
+        setError('verify-email')
+      } else if (error.message?.includes('Invalid login credentials')) {
+        setError('invalid-credentials')
+      } else {
+        setError(error.message || 'Failed to sign in')
+      }
     } finally {
       setLoading(false)
     }
@@ -208,11 +215,58 @@ export default function LoginPage() {
                     />
                   </FormField>
 
-                  {error && (
-                    <div className="rounded-lg bg-red-50 border border-red-200 p-3">
-                      <Text size="small" className="text-red-600">
-                        {error}
-                      </Text>
+                  {/* Modern error display - Jony Ive inspired: subtle, clean, human */}
+                  {error === 'verify-email' && (
+                    <div className="rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 p-4 backdrop-blur-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-400 rounded-full flex items-center justify-center shadow-sm">
+                            <Mail className="w-5 h-5 text-white" />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900 mb-1">Check your inbox</h3>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            We've sent a confirmation link to your email.
+                            Click it to activate your account and start your journey.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {error === 'invalid-credentials' && (
+                    <div className="rounded-2xl bg-gradient-to-r from-slate-50 to-gray-50 border border-gray-200/50 p-4 backdrop-blur-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 bg-gradient-to-br from-gray-400 to-slate-500 rounded-full flex items-center justify-center shadow-sm">
+                            <Info className="w-5 h-5 text-white" />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900 mb-1">Let's try again</h3>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            The email or password doesn't match our records.
+                            Double-check and give it another go.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {error && error !== 'verify-email' && error !== 'invalid-credentials' && (
+                    <div className="rounded-2xl bg-gradient-to-r from-red-50 to-rose-50 border border-red-200/50 p-4 backdrop-blur-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 bg-gradient-to-br from-red-400 to-rose-400 rounded-full flex items-center justify-center shadow-sm">
+                            <AlertCircle className="w-5 h-5 text-white" />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900 mb-1">Something went wrong</h3>
+                          <p className="text-sm text-gray-600 leading-relaxed">{error}</p>
+                        </div>
+                      </div>
                     </div>
                   )}
 
