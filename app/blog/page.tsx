@@ -22,7 +22,7 @@ export default function BlogPage() {
   ]
 
   const featuredPost = {
-    id: 1,
+    id: 'future-of-payment-processing',
     title: 'The Future of Payment Processing: AI-Powered Conversions',
     excerpt: 'Discover how artificial intelligence is revolutionizing payment processing and increasing conversion rates by up to 47%. Learn about the latest trends, technologies, and best practices that are shaping the future of digital payments.',
     author: 'Sarah Chen',
@@ -96,7 +96,7 @@ export default function BlogPage() {
       tags: ['Conversion', 'Optimization', 'UX'],
     },
     {
-      id: 8,
+      id: 'building-real-time-payment-analytics',
       title: 'Building Real-time Payment Analytics at Scale',
       excerpt: 'How we process millions of events per second to deliver instant analytics. Architecture decisions and technology choices explained.',
       author: 'Rachel Green',
@@ -106,7 +106,7 @@ export default function BlogPage() {
       tags: ['Analytics', 'Real-time', 'Architecture'],
     },
     {
-      id: 9,
+      id: 'payment-fraud-2024-trends-prevention',
       title: 'The State of Payment Fraud in 2024: Trends and Prevention',
       excerpt: 'Latest fraud patterns, detection techniques, and prevention strategies. How machine learning is changing the fraud prevention landscape.',
       author: 'James Wilson',
