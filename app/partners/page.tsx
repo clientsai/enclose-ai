@@ -1,5 +1,4 @@
-import PageLayout from '@/components/PageLayout'
-import { Handshake, Zap, Shield, Globe, TrendingUp, Award, Users, ArrowRight } from 'lucide-react'
+import { Users, Zap, Shield, Globe, TrendingUp, Award, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 export default function PartnersPage() {
@@ -99,13 +98,12 @@ export default function PartnersPage() {
   ]
 
   return (
-    <PageLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           {/* Header */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-6">
-              <Handshake className="h-8 w-8 text-white" />
+              <Users className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-4">
               Partner Program
@@ -222,6 +220,5 @@ export default function PartnersPage() {
           </div>
         </div>
       </div>
-    </PageLayout>
   )
 }

@@ -4,6 +4,9 @@ import { exchangeCodeForToken } from '@/lib/stripe'
 import { encrypt } from '@/lib/encryption'
 import { supabaseAdmin } from '@/lib/supabase'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)

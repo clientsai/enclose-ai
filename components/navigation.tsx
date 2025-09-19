@@ -129,9 +129,9 @@ export function Navigation() {
             <Button variant="ghost" asChild>
               <Link href="https://app.enclose.ai">Sign in</Link>
             </Button>
-            <Button variant="gradient" asChild>
-              <Link href="https://app.enclose.ai/create">Start building</Link>
-            </Button>
+                  <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700" asChild>
+                    <Link href="https://app.enclose.ai/create">Start building</Link>
+                  </Button>
           </div>
         </nav>
 
@@ -197,9 +197,9 @@ export function Navigation() {
                     >
                       Sign in
                     </Link>
-                    <Button variant="gradient" className="w-full" asChild>
-                      <Link href="https://app.enclose.ai/create">Start building</Link>
-                    </Button>
+                           <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700" asChild>
+                             <Link href="https://app.enclose.ai/create">Start building</Link>
+                           </Button>
                   </div>
                 </div>
               </div>

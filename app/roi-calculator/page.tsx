@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import PageLayout from '@/components/PageLayout'
 import { Calculator, DollarSign, Clock, TrendingUp, Users, Zap, CheckCircle, ArrowRight, BarChart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -40,8 +39,7 @@ export default function ROICalculatorPage() {
   }
 
   return (
-    <PageLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           {/* Header */}
           <div className="text-center mb-16">
@@ -365,6 +363,5 @@ export default function ROICalculatorPage() {
           )}
         </div>
       </div>
-    </PageLayout>
   )
 }

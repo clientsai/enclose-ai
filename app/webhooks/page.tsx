@@ -1,3 +1,5 @@
+'use client'
+
 import { Webhook, Code, Shield, Zap, AlertCircle, CheckCircle, Copy, Terminal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
