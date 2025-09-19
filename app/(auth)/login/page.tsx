@@ -307,11 +307,6 @@ export default function LoginPage() {
               </div>
             </Card>
 
-            <footer className="mt-8 text-center">
-              <Text size="small" muted>
-                Protected by enterprise-grade security
-              </Text>
-            </footer>
           </div>
         </Section>
       </div>

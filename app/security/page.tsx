@@ -349,52 +349,6 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h4 className="font-semibold mb-4">Security Resources</h4>
-              <ul className="space-y-2">
-                <li><Link href="/security/whitepaper" className="text-gray-400 hover:text-white">Security Whitepaper</Link></li>
-                <li><Link href="/security/vulnerability" className="text-gray-400 hover:text-white">Vulnerability Disclosure</Link></li>
-                <li><Link href="/security/incident" className="text-gray-400 hover:text-white">Incident Response</Link></li>
-                <li><Link href="/security/audit" className="text-gray-400 hover:text-white">Audit Reports</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Compliance</h4>
-              <ul className="space-y-2">
-                <li><Link href="/compliance/pci" className="text-gray-400 hover:text-white">PCI Compliance</Link></li>
-                <li><Link href="/compliance/gdpr" className="text-gray-400 hover:text-white">GDPR</Link></li>
-                <li><Link href="/compliance/soc2" className="text-gray-400 hover:text-white">SOC 2</Link></li>
-                <li><Link href="/compliance/iso" className="text-gray-400 hover:text-white">ISO Certifications</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Contact Security</h4>
-              <ul className="space-y-2">
-                <li><a href="mailto:security@enclose.ai" className="text-gray-400 hover:text-white">security@enclose.ai</a></li>
-                <li><Link href="/security/report" className="text-gray-400 hover:text-white">Report Issue</Link></li>
-                <li><Link href="/security/team" className="text-gray-400 hover:text-white">Security Team</Link></li>
-                <li><Link href="/security/advisories" className="text-gray-400 hover:text-white">Security Advisories</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Trust Center</h4>
-              <ul className="space-y-2">
-                <li><Link href="/trust" className="text-gray-400 hover:text-white">Trust Center</Link></li>
-                <li><Link href="/status" className="text-gray-400 hover:text-white">System Status</Link></li>
-                <li><Link href="/uptime" className="text-gray-400 hover:text-white">Uptime History</Link></li>
-                <li><Link href="/transparency" className="text-gray-400 hover:text-white">Transparency Report</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
-            <p>© 2024 Enclose.AI. Security is our priority.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }
