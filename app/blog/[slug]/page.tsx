@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button'
 const blogPosts: { [key: string]: any } = {
   'how-we-achieved-47ms-api-response-times': {
     title: 'How We Achieved 47ms API Response Times at Scale',
-    author: 'Alex Kim',
-    role: 'Principal Engineer',
+    author: 'Enclose.ai Team',
+    role: 'Engineering Team',
     date: 'January 10, 2024',
     readTime: '15 min read',
     category: 'engineering',
@@ -500,8 +500,8 @@ AND p.created_at > '2024-01-01';</code></pre>
   },
   'future-of-payment-processing': {
     title: 'The Future of Payment Processing: AI-Powered Conversions',
-    author: 'Sarah Chen',
-    role: 'CEO & Co-founder',
+    author: 'Enclose.ai Team',
+    role: 'Product Team',
     date: 'January 15, 2025',
     readTime: '8 min read',
     category: 'payments',
@@ -753,8 +753,8 @@ AND p.created_at > '2024-01-01';</code></pre>
   },
   'pci-compliant-infrastructure': {
     title: 'Building a PCI-Compliant Payment Infrastructure from Scratch',
-    author: 'Michael Rodriguez',
-    role: 'CTO',
+    author: 'Enclose.ai Team',
+    role: 'Security Team',
     date: 'January 12, 2025',
     readTime: '12 min read',
     category: 'security',
@@ -981,8 +981,8 @@ AND p.created_at > '2024-01-01';</code></pre>
   },
   'conversion-rate-optimization': {
     title: 'Conversion Rate Optimization for Payment Pages',
-    author: 'Tom Anderson',
-    role: 'UX Designer',
+    author: 'Enclose.ai Team',
+    role: 'Design Team',
     date: 'December 28, 2023',
     readTime: '11 min read',
     category: 'business',
@@ -1244,8 +1244,8 @@ AND p.created_at > '2024-01-01';</code></pre>
   },
   'building-real-time-payment-analytics': {
     title: 'Building Real-time Payment Analytics at Scale',
-    author: 'Rachel Green',
-    role: 'Senior Data Engineer',
+    author: 'Enclose.ai Team',
+    role: 'Data Team',
     date: 'December 25, 2023',
     readTime: '14 min read',
     category: 'engineering',
@@ -1370,8 +1370,8 @@ AND p.created_at > '2024-01-01';</code></pre>
   },
   'payment-fraud-2024-trends-prevention': {
     title: 'The State of Payment Fraud in 2024: Trends and Prevention',
-    author: 'James Wilson',
-    role: 'Head of Security',
+    author: 'Enclose.ai Team',
+    role: 'Security Team',
     date: 'December 22, 2023',
     readTime: '13 min read',
     category: 'security',

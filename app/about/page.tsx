@@ -40,30 +40,21 @@ export default function AboutPage() {
     { year: '2024', event: 'Processing $127M+ monthly' }
   ]
 
-  const team = [
+  const teamValues = [
     {
-      name: 'Sarah Chen',
-      role: 'Co-Founder & CEO',
-      bio: 'Former Stripe engineer with 10+ years in fintech',
-      image: '/team/sarah.jpg'
+      title: 'Leadership Team',
+      description: 'Our leadership team brings decades of experience from leading technology companies, with deep expertise in payment infrastructure and fintech innovation.',
+      icon: <Users className="h-8 w-8 text-blue-500" />
     },
     {
-      name: 'Michael Rodriguez',
-      role: 'Co-Founder & CTO',
-      bio: 'Ex-Square architect, distributed systems expert',
-      image: '/team/michael.jpg'
+      title: 'Engineering Excellence',
+      description: 'Our engineering team combines technical expertise with a passion for building scalable, secure payment solutions that power businesses worldwide.',
+      icon: <Award className="h-8 w-8 text-green-500" />
     },
     {
-      name: 'Emma Watson',
-      role: 'VP of Engineering',
-      bio: 'Led payment infrastructure at PayPal',
-      image: '/team/emma.jpg'
-    },
-    {
-      name: 'David Kim',
-      role: 'VP of Product',
-      bio: 'Product leader from Adyen and Braintree',
-      image: '/team/david.jpg'
+      title: 'Product Innovation',
+      description: 'Our product team focuses on creating intuitive, powerful tools that make payment processing accessible to businesses of all sizes.',
+      icon: <Lightbulb className="h-8 w-8 text-yellow-500" />
     }
   ]
 
@@ -194,18 +185,17 @@ export default function AboutPage() {
       <section className="py-20 px-4 bg-white/50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Leadership Team</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Team</h2>
             <p className="text-gray-600">Industry veterans with decades of combined experience</p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {team.map((member, idx) => (
+          <div className="grid md:grid-cols-3 gap-8">
+            {teamValues.map((value, idx) => (
               <div key={idx} className="text-center">
-                <div className="w-32 h-32 mx-auto mb-4 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full flex items-center justify-center text-white text-3xl font-bold">
-                  {member.name.split(' ').map(n => n[0]).join('')}
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-2xl flex items-center justify-center text-white">
+                  {value.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-1">{member.name}</h3>
-                <p className="text-indigo-600 font-medium mb-2">{member.role}</p>
-                <p className="text-gray-600 text-sm">{member.bio}</p>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{value.title}</h3>
+                <p className="text-gray-600 text-sm">{value.description}</p>
               </div>
             ))}
           </div>
