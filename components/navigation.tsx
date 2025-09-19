@@ -25,8 +25,8 @@ const navigation = [
     name: "Resources",
     href: "#",
     children: [
-      { name: "Documentation", href: "https://docs.enclose.ai" },
-      { name: "API Reference", href: "https://api.enclose.ai" },
+      { name: "Documentation", href: "/docs" },
+      { name: "API Reference", href: "/api-reference" },
       { name: "Blog", href: "/blog" },
       { name: "Case Studies", href: "/case-studies" },
       { name: "Help Center", href: "/help" },
@@ -127,10 +127,10 @@ export function Navigation() {
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
             <Button variant="ghost" asChild>
-              <Link href="https://app.enclose.ai">Sign in</Link>
+              <Link href="/login">Sign in</Link>
             </Button>
                   <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700" asChild>
-                    <Link href="https://app.enclose.ai/create">Start building</Link>
+                    <Link href="/register">Start building</Link>
                   </Button>
           </div>
         </nav>
@@ -192,13 +192,13 @@ export function Navigation() {
                   </div>
                   <div className="py-6 space-y-2">
                     <Link
-                      href="https://app.enclose.ai"
+                      href="/login"
                       className="block px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:text-[#635BFF]"
                     >
                       Sign in
                     </Link>
                            <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700" asChild>
-                             <Link href="https://app.enclose.ai/create">Start building</Link>
+                             <Link href="/register">Start building</Link>
                            </Button>
                   </div>
                 </div>
