@@ -27,6 +27,12 @@ export default function RegisterPage() {
 
   // Check if Supabase is properly configured
   if (!supabase) {
+    console.error('Supabase client not initialized')
+    console.error('Environment variables:', {
+      NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    })
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
@@ -70,11 +76,14 @@ export default function RegisterPage() {
       }
 
       // Create auth user with proper redirect URL
+      const redirectUrl = process.env.NEXT_PUBLIC_APP_URL || 
+        (typeof window !== 'undefined' ? window.location.origin : 'https://enclose.ai')
+      
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: 'https://enclose-ai.vercel.app/login',
+          emailRedirectTo: `${redirectUrl}/login`,
           data: {
             full_name: formData.fullName,
           },
@@ -101,7 +110,16 @@ export default function RegisterPage() {
         // Set user_id cookie
         document.cookie = `user_id=${authData.user.id}; path=/`
 
-        router.push('/dashboard')
+        // Show success message before redirect
+        setError(null)
+        console.log('Account created successfully, redirecting to dashboard...')
+        
+        // Small delay to ensure state updates
+        setTimeout(() => {
+          router.push('/dashboard')
+        }, 100)
+      } else {
+        setError('Account creation failed. Please try again.')
       }
     } catch (error: any) {
       setError(error.message || 'Failed to create account')
