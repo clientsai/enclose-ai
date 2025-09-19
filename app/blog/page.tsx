@@ -36,7 +36,7 @@ export default function BlogPage() {
 
   const blogPosts = [
     {
-      id: 2,
+      id: 'pci-compliant-infrastructure',
       title: 'Building a PCI-Compliant Payment Infrastructure from Scratch',
       excerpt: 'A comprehensive guide to achieving PCI DSS Level 1 certification. Learn about security requirements, implementation strategies, and common pitfalls to avoid.',
       author: 'Michael Rodriguez',
@@ -46,7 +46,7 @@ export default function BlogPage() {
       tags: ['Security', 'Compliance', 'PCI DSS'],
     },
     {
-      id: 3,
+      id: 'how-we-achieved-47ms-api-response-times',
       title: 'How We Achieved 47ms API Response Times at Scale',
       excerpt: 'Deep dive into our infrastructure optimizations that led to industry-leading API performance. From database indexing to edge caching strategies.',
       author: 'Alex Kim',
@@ -56,7 +56,7 @@ export default function BlogPage() {
       tags: ['Performance', 'Infrastructure', 'API'],
     },
     {
-      id: 4,
+      id: 'global-payment-methods-complete-guide',
       title: 'Global Payment Methods: A Complete Guide for 2024',
       excerpt: 'Understanding local payment preferences across 195+ countries. From digital wallets to bank transfers, learn what your customers prefer.',
       author: 'Emma Watson',
@@ -66,7 +66,7 @@ export default function BlogPage() {
       tags: ['International', 'Payment Methods', 'Localization'],
     },
     {
-      id: 5,
+      id: 'economics-of-payment-processing',
       title: 'The Economics of Payment Processing: Understanding Fees',
       excerpt: 'Demystifying payment processing fees, interchange rates, and how to optimize your payment stack for maximum profitability.',
       author: 'David Park',
@@ -76,7 +76,7 @@ export default function BlogPage() {
       tags: ['Pricing', 'Business Strategy', 'Fees'],
     },
     {
-      id: 6,
+      id: 'webhook-security-best-practices',
       title: 'Webhook Security: Best Practices for Payment Notifications',
       excerpt: 'Secure your webhook endpoints against common attacks. Implementation guide with code examples in multiple languages.',
       author: 'Lisa Chen',
@@ -86,7 +86,7 @@ export default function BlogPage() {
       tags: ['Webhooks', 'Security', 'API'],
     },
     {
-      id: 7,
+      id: 'conversion-rate-optimization',
       title: 'Conversion Rate Optimization for Payment Pages',
       excerpt: 'Data-driven strategies that increased our clients\' conversion rates by an average of 23%. A/B testing insights and implementation tips.',
       author: 'Tom Anderson',
@@ -219,7 +219,7 @@ export default function BlogPage() {
                   <span className="text-sm text-gray-500">{featuredPost.readTime}</span>
                 </div>
                 <h2 className="text-2xl font-bold mb-4 hover:text-indigo-600 transition-colors">
-                  <Link href={`/blog/${featuredPost.id}`}>{featuredPost.title}</Link>
+                  <Link href="/blog/future-of-payment-processing">{featuredPost.title}</Link>
                 </h2>
                 <p className="text-gray-600 mb-6">{featuredPost.excerpt}</p>
                 <div className="flex items-center justify-between">
@@ -231,7 +231,7 @@ export default function BlogPage() {
                     </div>
                   </div>
                   <Button asChild>
-                    <Link href={`/blog/${featuredPost.id}`}>
+                    <Link href="/blog/future-of-payment-processing">
                       Read Article <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>

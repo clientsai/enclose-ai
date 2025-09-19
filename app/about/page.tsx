@@ -76,41 +76,6 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
-      {/* Navigation */}
-      <nav className="border-b bg-white/70 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <Link href="/">
-              <Logo size="md" />
-            </Link>
-            <div className="hidden md:flex items-center gap-6">
-              <Link href="/features" className="text-gray-600 hover:text-indigo-600 transition-colors font-medium">
-                Features
-              </Link>
-              <Link href="/pricing" className="text-gray-600 hover:text-indigo-600 transition-colors font-medium">
-                Pricing
-              </Link>
-              <Link href="/docs" className="text-gray-600 hover:text-indigo-600 transition-colors font-medium">
-                Docs
-              </Link>
-              <Link href="/about" className="text-indigo-600 font-medium">
-                About
-              </Link>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link href="/login">
-                <Button variant="outline">Sign In</Button>
-              </Link>
-              <Link href="/register">
-                <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
-                  Get Started
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
 
       {/* Hero Section */}
       <section className="pt-20 pb-12 px-4">
