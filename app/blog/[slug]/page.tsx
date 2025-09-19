@@ -2,7 +2,6 @@
 
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import PageLayout from '@/components/PageLayout'
 import { Calendar, Clock, User, ArrowLeft, Share2, Twitter, Linkedin, Facebook, BookOpen, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -1570,8 +1569,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <PageLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
         <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Back to Blog */}
           <Link href="/blog" className="inline-flex items-center text-indigo-600 hover:text-indigo-700 mb-8">
@@ -1722,6 +1720,5 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           </div>
         </article>
       </div>
-    </PageLayout>
   )
 }
